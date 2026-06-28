@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isAppInitialized) return;
+  if (isAppInitialized) return; 
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
@@ -48,10 +48,10 @@ function togglePasswordVisibility() {
 
   if (passwordInput.type === 'password') {
     passwordInput.type = 'text';
-    toggleBtn.innerText = '🙈';
+    toggleBtn.innerText = '🙈'; 
   } else {
     passwordInput.type = 'password';
-    toggleBtn.innerText = '👁️';
+    toggleBtn.innerText = '👁️'; 
   }
 }
 
@@ -88,7 +88,7 @@ async function handleAuthAction(actionType) {
         return;
       }
       updateStatus("Validating access and registering...", false);
-
+      
       const { data, error } = await bballDb.auth.signUp({
         email,
         password,
@@ -103,14 +103,14 @@ async function handleAuthAction(actionType) {
   }
 }
 
-// FIXED: Searches by user_id instead of id to prevent the 400 Bad Request error
+// FIXED: Filter profiles using 'user_id' parameter to patch the 400 Bad Request error
 async function fetchUserProfile(userId) {
   console.log("Fetching profile for user ID:", userId);
   try {
     let { data: profile, error } = await bballDb
-      .from('profiles')
+      .from('profiles') 
       .select('family_id')
-      .eq('user_id', userId)
+      .eq('user_id', userId) 
       .maybeSingle();
 
     if (!error && profile) {
@@ -120,7 +120,7 @@ async function fetchUserProfile(userId) {
     await loadInitialApplicationState();
   } catch (err) {
     console.error("Profile Fetch Warning:", err);
-    await loadInitialApplicationState();
+    await loadInitialApplicationState(); 
   }
 }
 
@@ -138,13 +138,13 @@ async function loadInitialApplicationState() {
         global_metric_templates (id, stat_name, section, is_counter, default_price)
       `)
       .eq("family_id", currentFamilyId)
-      .eq("global_metric_templates.app_type", "basketball:solo");
+      .eq("global_metric_templates.app_type", "basketball:solo"); 
 
     if (error) throw error;
 
     if (!configs || configs.length === 0) {
       console.log("New account detected. Seeding personal settings from global templates...");
-
+      
       const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
         target_family_id: currentFamilyId,
         target_app_type: 'basketball:solo'
@@ -154,7 +154,7 @@ async function loadInitialApplicationState() {
       return await loadInitialApplicationState();
     }
 
-    // Sort configurations dynamically by database template ID to keep list ordering exact
+    // Sort configurations dynamically by template index sequence
     configs.sort((a, b) => a.global_metric_templates.id - b.global_metric_templates.id);
 
     const formattedStats = configs.map((c) => ({
@@ -162,8 +162,8 @@ async function loadInitialApplicationState() {
       price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
       count: 0,
       visible: c.visible,
-      row: c.global_metric_templates.id,
-      section: c.global_metric_templates.section
+      row: c.global_metric_templates.id, 
+      section: c.global_metric_templates.section 
     }));
 
     curData = {
@@ -190,14 +190,14 @@ async function loadInitialApplicationState() {
 function render(d) {
   curData = d;
   document.getElementById('opp').value = d.opp || "";
-  setLoc(d.loc);
+  setLoc(d.loc); 
   setWL(d.res);
   document.getElementById('scoreUs').value = d.su || "";
   document.getElementById('scoreThem').value = d.st || "";
   document.getElementById('pMin').value = d.pm || "";
   document.getElementById('tMin').value = d.tm || "32";
-  if (document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
-
+  if(document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
+  
   const dl = document.getElementById('seasonList');
   if (dl) {
     dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
@@ -218,8 +218,9 @@ function render(d) {
         <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
       </div>`).join('');
   }
-
+  
   recalcTotal();
+  checkAchievements(); // Re-evaluate performance banners live on stat edits
   applyLayoutOrder();
 }
 
@@ -242,16 +243,19 @@ function rowHTML(s) {
     </div>`;
 }
 
-// FIXED: References 'game_logs' instead of 'games' to match cache definition schemas
+// ==========================================
+// APP LOGS HISTORY AND ARCHIVE MANAGER
+// ==========================================
+// FIXED: Queries public.app_history table endpoint directly to resolve 404 cache crashes
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
   if (historyBody) {
     historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
   }
-
+  
   try {
     let { data: games, error } = await bballDb
-      .from("game_logs")
+      .from("app_history") 
       .select("*")
       .eq("family_id", currentFamilyId)
       .order("date", { ascending: false });
@@ -259,7 +263,7 @@ async function loadHistory() {
     if (error) throw error;
 
     histData = (games || []).map(g => ({
-      sheetRow: g.id,
+      sheetRow: g.id, 
       date: g.date,
       season: g.season || "Season 1",
       opp: g.opponent,
@@ -314,25 +318,25 @@ async function loadHistory() {
 function switchTab(t) {
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
+  
   const targetPage = document.getElementById('page-' + t);
   const targetTab = document.getElementById('tab-' + t);
-
+  
   if (targetPage) targetPage.style.display = 'block';
   if (targetTab) targetTab.classList.add('active');
-
+  
   if (t === 'history' && histData.length === 0) loadHistory();
   if (t === 'history' && histData.length > 0) renderHistory();
 }
 
-function autoWL() {
+function autoWL(){
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-  if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
   triggerSync();
 }
 
-function setLoc(h) { isHome = h; document.getElementById('btnHome').classList.toggle('active', h); document.getElementById('btnAway').classList.toggle('active', !h) }
-function setWL(w) { curWL = w;['btnWin', 'btnTie', 'btnLoss'].forEach(b => document.getElementById(b).classList.remove('active')); if (w) document.getElementById(w === 'W' ? 'btnWin' : (w === 'T' ? 'btnLoss')).classList.add('active') }
+function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
+function setWL(w){curWL=w;['btnWin','btnTie','btnLoss'].forEach(b=>document.getElementById(b).classList.remove('active'));if(w)document.getElementById(w==='W'?'btnWin':(w==='T'?'btnLoss')).classList.add('active')}
 
 function updateDefaultTMin(val) {
   document.getElementById('tMin').value = val;
@@ -349,7 +353,7 @@ function applyLayoutOrder() {
   const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
   const container = document.getElementById('tracker-boards-container');
   if (!container) return;
-
+  
   order.forEach(id => {
     const wrapper = document.getElementById('wrap-' + id);
     if (wrapper) container.appendChild(wrapper);
@@ -362,15 +366,71 @@ function recalcTotal() {
   document.getElementById('totalVal').innerText = `$${t.toFixed(2)}`;
 }
 
+// RESTORED: Automated attempt linkage workflow rules
 function tally(r, a) {
   const s = curData.stats.find(x => x.row === r);
   if (!s) return;
+  
   s.count = Math.max(0, s.count + a);
   document.getElementById(`c-${r}`).innerText = s.count;
+
+  // Automated linkage logic: Increment an attempt row concurrently when a point is made
+  if (a > 0) {
+    if (s.name.includes('🎯 2PT Made')) {
+      const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
+      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+    } else if (s.name.includes('🥅 FT Made')) {
+      const attRow = curData.stats.find(x => x.name.includes('🏀 FT Attempt'));
+      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+    } else if (s.name.includes('👌 3PT Made')) {
+      const attRow = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'));
+      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+    }
+  }
+
   if (s.section !== 'team') {
     document.getElementById(`sub-${r}`).innerText = `$${(s.count * s.price).toFixed(2)}`;
+    // Re-render linked attempt price rows for accurate totals formatting updates
+    curData.stats.forEach(x => {
+      const el = document.getElementById(`sub-${x.row}`);
+      if (el && x.section !== 'team') el.innerText = `$${(x.count * x.price).toFixed(2)}`;
+    });
   }
   recalcTotal();
+  checkAchievements();
+}
+
+// RESTORED: Dynamic live verification of milestones like Double-Doubles or Triple-Doubles
+function checkAchievements() {
+  if (!curData) return;
+  
+  const points = (curData.stats.find(x => x.name.includes('🎯 2PT Made'))?.count || 0) * 2 +
+                 (curData.stats.find(x => x.name.includes('👌 3PT Made'))?.count || 0) * 3 +
+                 (curData.stats.find(x => x.name.includes('🥅 FT Made'))?.count || 0);
+                 
+  const rebounds = curData.stats.find(x => x.name.includes('🏀 Rebounds'))?.count || 0;
+  const assists = curData.stats.find(x => x.name.includes('🎁 Assists'))?.count || 0;
+  const steals = curData.stats.find(x => x.name.includes('🧤 Steals'))?.count || 0;
+  const blocks = curData.stats.find(x => x.name.includes('🚫 Blocks'))?.count || 0;
+
+  const coreCategories = [points, rebounds, assists, steals, blocks];
+  const doubleDigitCount = coreCategories.filter(val => val >= 10).length;
+
+  const badgeEl = document.getElementById('achievements-container');
+  if (!badgeEl) return;
+
+  if (doubleDigitCount >= 3) {
+    badgeEl.innerText = "🔥 TRIPLE-DOUBLE COUPLING! 🔥";
+    badgeEl.style.display = "block";
+  } else if (doubleDigitCount === 2) {
+    badgeEl.innerText = "⚡ DOUBLE-DOUBLE RECORDED! ⚡";
+    badgeEl.style.display = "block";
+  } else if (points >= 20) {
+    badgeEl.innerText = "🎯 20+ POINT SCORING TIER! 🎯";
+    badgeEl.style.display = "block";
+  } else {
+    badgeEl.style.display = "none";
+  }
 }
 
 function toggleVis(row, val) {
@@ -379,5 +439,5 @@ function toggleVis(row, val) {
   render(curData);
 }
 
-function triggerSync() { }
-function renderHistory() { }
+function triggerSync() {}
+function renderHistory() {}
