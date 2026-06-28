@@ -211,6 +211,9 @@ async function loadInitialApplicationState() {
     document.getElementById("main-app-content").style.display = "block";
     console.log("UI Switched to main content.");
 
+    const mainContent = document.getElementById("main-app-container");
+    console.log("Main container found:", mainContent);
+
   } catch (err) {
     console.error("CRITICAL UI ERROR:", err);
     updateStatus("Error loading data: " + err.message, true);
