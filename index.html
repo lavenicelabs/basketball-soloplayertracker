@@ -178,16 +178,38 @@
         This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
       </div>
 
-      <div class="header">
-        <h3 style="margin:0 0 5px 0;">App Documentation</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
-        <div id="documentation-container" style="font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 10px; color:#34495e;">
-          <p><strong>Advanced Calculations Reference:</strong></p>
-          <ul>
-            <li><strong>Usage Rate (USG%):</strong> Measures the percentage of team plays concluded by the player while on the court. Formulated using field goal attempts, free throw attempts, and turnovers against total team counts[cite: 247].</li>
-            <li><strong>Effective Field Goal Percentage (eFG%):</strong> Adjusts normal field goal percentages to account for the fact that 3-point field goals are worth more than 2-point field goals. Built cleanly as: <code>(2PT Made + 1.5 * 3PT Made) / (Total Field Goal Attempts)</code>.</li>
-          </ul>
+      <div class="section-title">📱 App Workflow</div>
+      <div class="help-card">
+        <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
         </div>
+        <ul>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes. Tap any price in the Tracker to edit its value.</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
+          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash (🗑️) to exclude them from averages. To restore a trashed game, check the "Trash" box at the top of the History tab to reveal hidden games, then click the Restore icon (♻️).</li>
+          <li><strong>5. Export PDF:</strong> Tap the ✏️ icon on any game in the History tab and click <strong>Export PDF</strong> to download a printable box score.</li>
+        </ul>
+      </div>
+
+      <div class="section-title">📋 Game Details (Header)</div>
+      <div class="help-card">
+        <ul>
+          <li><strong>Season:</strong> Type a new season or pick from the dropdown. <em>The app automatically defaults to your most recently created season.</em></li>
+          <li><strong>Scores & Result:</strong> Enter "Our" score and "Opp" (Opponent) score. The Win/Tie/Loss toggle will <em>automatically update</em> based on the scores you enter.</li>
+          <li><strong>Minutes (MIN):</strong> Enter Player MIN (your playing time) and Team MIN (total game length, e.g., 32, 40, or 48). <em>Team MIN is required to accurately calculate Usage Percentage (USG%). You can set your default Team MIN in the Settings tab so you don't have to enter it every time.</em></li>
+          <li><strong>Location:</strong> Toggle whether the game was Home or Away.</li>
+        </ul>
+      </div>
+
+      <div class="section-title">💸 Custom Metrics</div>
+      <div class="help-card">
+        <strong>Total $</strong>: An incentive option for players to earn money by accumulating stats. <em>Prices are editable by tapping the blue price text in the Tracker.</em><br><br>
+        <strong>Advanced Calculations Reference:</strong>
+        <ul>
+          <li><strong>Usage Rate (USG%):</strong> Measures the percentage of team plays concluded by the player while on the court. Formulated using field goal attempts, free throw attempts, and turnovers against total team counts.</li>
+          <li><strong>Effective Field Goal Percentage (eFG%):</strong> Adjusts normal field goal percentages to account for the fact that 3-point field goals are worth more than 2-point field goals. Built cleanly as: <code>(2PT Made + 1.5 * 3PT Made) / (Total Field Goal Attempts)</code>.</li>
+        </ul>
       </div>
     </div>
 
