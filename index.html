@@ -1,171 +1,69 @@
 <!doctype html>
 <html>
-  <head>
-    <base target="_top" />
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"
-    />
-    <title>SoloPlayer Tracker</title>
 
-    <link rel="stylesheet" href="style.css" />
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#2c3e50" />
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+  <meta name="apple-mobile-web-app-title" content="BBall Tracker">
+  <meta name="application-name" content="BBall Tracker">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?t=1719500000"></script>
-  </head>
-  <body>
+  <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/basketball-emoji.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://img.icons8.com/emoji/192/basketball-emoji.png">
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js?t=1719500000"></script>
+</head>
+
+<body>
+
+  <div id="auth-overlay"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
     <div
-      id="auth-overlay"
-      style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #2c3e50;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      "
-    >
-      <div
-        style="
-          background: white;
-          padding: 30px;
-          border-radius: 12px;
-          max-width: 400px;
-          width: 90%;
-          text-align: center;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-          font-family: &quot;Segoe UI&quot;, Roboto, sans-serif;
-        "
-      >
-        <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">
-          🏀 SoloPlayer Tracker
-        </h2>
+      style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
+      <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
+      <div id="auth-status"
+        style="margin: 10px 0; font-size: 0.9rem; font-weight: bold; min-height: 1.2em; color: #2980b9;"></div>
+      <p id="auth-message" style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px">Access real-time basketball
+        logging & performance insights</p>
 
-        <div
-          id="auth-status"
-          style="
-            margin: 10px 0;
-            font-size: 0.9rem;
-            font-weight: bold;
-            min-height: 1.2em;
-            color: #2980b9;
-          "
-        ></div>
+      <input type="email" id="auth-email" placeholder="Email Address"
+        style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+      <div id="password-container" style="position: relative; width: 100%; margin-bottom: 10px">
+        <input type="password" id="auth-password" placeholder="Password"
+          style="width: 100%; padding: 12px; padding-right: 45px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+        <span id="toggle-password-btn" onclick="togglePasswordVisibility()"
+          style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; user-select: none;">👁️</span>
+      </div>
+      <input type="text" id="auth-access-key" placeholder="Enter Access Key"
+        style="width: 100%; margin-bottom: 15px; padding: 12px; box-sizing: border-box; border: 1px solid #2980b9; border-radius: 6px; font-size: 0.9rem; display: none;">
 
-        <p
-          id="auth-message"
-          style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px"
-        >
-          Access real-time basketball logging & performance insights
-        </p>
-
-        <input
-          type="email"
-          id="auth-email"
-          placeholder="Email Address"
-          style="
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.9rem;
-          "
-        />
-
-        <div
-          id="password-container"
-          style="position: relative; width: 100%; margin-bottom: 10px"
-        >
-          <input
-            type="password"
-            id="auth-password"
-            placeholder="Password"
-            style="
-              width: 100%;
-              padding: 12px;
-              padding-right: 45px;
-              box-sizing: border-box;
-              border: 1px solid #ccc;
-              border-radius: 6px;
-              font-size: 0.9rem;
-            "
-          />
-          <span
-            id="toggle-password-btn"
-            onclick="togglePasswordVisibility()"
-            style="
-              position: absolute;
-              right: 12px;
-              top: 50%;
-              transform: translateY(-50%);
-              cursor: pointer;
-              font-size: 1.1rem;
-              user-select: none;
-            "
-            >👁️</span
-          >
-        </div>
-
-        <input
-          type="text"
-          id="auth-access-key"
-          placeholder="Enter Access Key"
-          style="
-            width: 100%;
-            margin-bottom: 15px;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid #2980b9;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            display: none;
-          "
-        />
-
-        <div id="standard-auth-buttons" style="display: flex; gap: 10px">
-          <button
-            onclick="handleAuthAction('login')"
-            style="
-              flex: 1;
-              background: #27ae60;
-              color: white;
-              padding: 12px;
-              border: none;
-              border-radius: 8px;
-              font-weight: bold;
-              cursor: pointer;
-            "
-          >
-            Sign In
-          </button>
-          <button
-            onclick="smartRegister()"
-            style="
-              flex: 1;
-              background: #2980b9;
-              color: white;
-              padding: 12px;
-              border: none;
-              border-radius: 8px;
-              font-weight: bold;
-              cursor: pointer;
-            "
-          >
-            Register
-          </button>
-        </div>
+      <div id="standard-auth-buttons" style="display: flex; gap: 10px">
+        <button onclick="handleAuthAction('login')"
+          style="flex: 1; background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Sign
+          In</button>
+        <button onclick="smartRegister()"
+          style="flex: 1; background: #2980b9; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Register</button>
       </div>
     </div>
+  </div>
 
-    <div id="main-app-container" style="display: none"></div>
-  </body>
+  <div id="main-app-container" style="display: none">
+
+    <div class="app-brand-header">
+      <div class="app-title"><span>🏀</span> SoloPlayer Tracker</div>
+      <div class="app-subtitle">Individual Basketball Statistics</div>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn active" id="tab-tracker" onclick="switchTab('tracker')">Tracker</button>
+      <button class="nav-btn" id="tab-history" onclick="switchTab('history')">History</button>
+      <button class="nav-btn" id="tab-settings" onclick="switchTab('settings')">Settings</button>
+      <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
+    </div>
+
+  </div>
+</body>
+
 </html>

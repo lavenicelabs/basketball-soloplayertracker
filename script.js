@@ -262,17 +262,29 @@ async function loadInitialApplicationState() {
     updateStatus("Error loading data: " + err.message, true);
   }
 }
+
 function render(d) {
-  curData = d;
+  const container = document.getElementById("main-app-container");
+  if (!container) return;
+
+  // If the container is empty, inject the tracker UI structure first
+  if (container.innerHTML === "") {
+    container.innerHTML = `
+      <div id="tracker-interface">
+        <input type="text" id="opp" placeholder="Opponent">
+        <input type="number" id="scoreUs" placeholder="Our Score">
+        </div>
+    `;
+  }
+
+  // Now update the values of the fields you just injected
   const setVal = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.value = val || "";
   };
   setVal("opp", d.opp);
   setVal("scoreUs", d.su);
-  setVal("scoreThem", d.st);
-  setVal("pMin", d.pm);
-  setVal("tMin", d.tm);
+  // ... set the rest of your values
 }
 
 function updateStatus(msg, err) {
@@ -289,15 +301,15 @@ function togglePasswordVisibility() {
 }
 
 function switchToMainContent() {
-  const container = document.getElementById("main-app-content");
+  const container = document.getElementById("main-app-container"); // Match your HTML ID
 
-  // Safety Check: If the container isn't found, stop here instead of crashing
+  // Safety Check
   if (!container) {
-    console.error("CRITICAL ERROR: 'main-app-content' not found. Ensure ID matches HTML.");
+    console.error("CRITICAL ERROR: 'main-app-container' not found in HTML.");
     return; 
   }
 
-  // Once we are past the 'if' check, we know the container exists
+  // Force the element to show
   container.style.display = "block";
   container.style.visibility = "visible";
 
