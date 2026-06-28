@@ -145,7 +145,7 @@ async function handleAuthAction(type) {
    // document.getElementById("main-app-content").style.display = "block";
 
     setDisplay('auth-overlay', 'none');
-    setDisplay('main-app-content', 'block');
+    setDisplay('main-app-container', 'block');
 
   } catch (err) {
     console.error("Critical error:", err);
@@ -188,7 +188,7 @@ async function checkActiveSession() {
       //document.getElementById("main-app-content").style.display = "block";
 
       setDisplay('auth-overlay', 'none');
-      setDisplay('main-app-content', 'block');
+      setDisplay('main-app-container', 'block');
 
       await loadInitialApplicationState();
     }
@@ -250,7 +250,7 @@ async function loadInitialApplicationState() {
     //document.getElementById("main-app-content").style.display = "block";
 
     setDisplay('auth-overlay', 'none');
-    setDisplay('main-app-content', 'block');
+    setDisplay('main-app-container', 'block');
 
     console.log("UI Switched to main content.");
 
