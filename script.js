@@ -1,3 +1,8 @@
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded - safe to look for IDs");
+    // Your initialization code here
+});
+
 // ==========================================
 // 1. GLOBAL INITIALIZATION
 // ==========================================
@@ -263,21 +268,20 @@ function togglePasswordVisibility() {
 }
 
 function switchToMainContent() {
-  const container = document.getElementById("main-app-container"); // Change this to your actual container ID
+  const container = document.getElementById("main-app-container");
 
   if (!container) {
-    console.error("CRITICAL ERROR: Could not find main-app-container or main-app-content in the DOM.");
-  } else {
-    console.log("Container found successfully:", container.id);
-    container.style.display = "block"; // Now it will actually show up!
+    console.error("CRITICAL ERROR: Could not find main-app-container in the DOM.");
+    return; // <--- STOP here, do not proceed to set .style
   }
 
-  // Force the element to show
+  // Now we know 'container' is NOT null
   container.style.display = "block";
   container.style.visibility = "visible";
 
-  // Check if the container is actually empty
+  console.log("Container found successfully:", container.id);
   console.log("Container innerHTML length:", container.innerHTML.length);
+  
   if (container.innerHTML.length === 0) {
     console.warn("Container is found but is empty!");
   }
