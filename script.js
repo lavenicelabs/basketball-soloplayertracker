@@ -148,7 +148,7 @@ async function loadInitialApplicationState() {
       .select(`
         visible,
         custom_price,
-        global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme)
+        global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme, formula)
       `)
       .eq("family_id", currentFamilyId)
       .eq("global_metric_templates.app_type", "basketball:solo"); 
@@ -167,7 +167,6 @@ async function loadInitialApplicationState() {
       return await loadInitialApplicationState();
     }
 
-    // Sort configurations dynamically by report order matrix
     configs.sort((a, b) => a.global_metric_templates.report_sort_order - b.global_metric_templates.report_sort_order);
 
     const formattedStats = configs.map((c) => ({
@@ -177,8 +176,10 @@ async function loadInitialApplicationState() {
       visible: c.visible,
       row: c.global_metric_templates.id, 
       section: c.global_metric_templates.section,
+      isCounter: c.global_metric_templates.is_counter,
       reportGroup: c.global_metric_templates.report_group,
-      colorTheme: c.global_metric_templates.color_theme
+      colorTheme: c.global_metric_templates.color_theme,
+      formula: c.global_metric_templates.formula
     }));
 
     curData = {
@@ -221,9 +222,33 @@ function render(d) {
     document.getElementById('season').value = d.seasons[d.seasons.length - 1];
   }
 
+  // Pre-calculate math templates before building innerHTML panels
+  calculateDynamicFormulas();
+
   document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
+
+  // Dynamically append the advanced evaluation metrics if they are toggled to show
+  const advBoard = document.getElementById('board-advanced');
+  if (advBoard) {
+    advBoard.innerHTML = d.stats.filter(s => s.section === 'advanced' && s.visible).map(rowHTML).join('');
+  } else if (d.stats.filter(s => s.section === 'advanced' && s.visible).length > 0) {
+    // If wrapping div isn't there, append cleanly beneath team boards wrapper container safely
+    let targetWrap = document.getElementById('tracker-boards-container');
+    if (targetWrap) {
+      let checkExist = document.getElementById('wrap-advanced');
+      if (!checkExist) {
+        let advContainerHTML = `
+          <div id="wrap-advanced">
+            <div class="section-title">📊 Advanced Metrics</div>
+            <div class="tracker-list list-advanced" id="board-advanced"></div>
+          </div>`;
+        targetWrap.insertAdjacentHTML('beforeend', advContainerHTML);
+        document.getElementById('board-advanced').innerHTML = d.stats.filter(s => s.section === 'advanced' && s.visible).map(rowHTML).join('');
+      }
+    }
+  }
 
   const settingsContainer = document.getElementById('settings-list');
   if (settingsContainer) {
@@ -248,22 +273,71 @@ function render(d) {
 }
 
 function rowHTML(s) {
-  const isTeam = s.section === 'team';
-  const moneyHTML = isTeam ? '' : `
+  const isTeamOrAdv = s.section === 'team' || s.section === 'advanced';
+  const countDisplay = s.section === 'advanced' ? s.count.toFixed(1) + (s.name.includes('%') ? '%' : '') : s.count;
+  
+  const moneyHTML = isTeamOrAdv ? '' : `
     <div class="t-money">
       <div class="t-price" style="color:${s.colorTheme}; font-weight:bold;" id="price-${s.row}" onclick="editPrice(${s.row},'${s.name.replace(/'/g, "\\'")}',${s.price})">$${s.price.toFixed(2)} ea</div>
       <span class="t-sub" id="sub-${s.row}">$${(s.count * s.price).toFixed(2)}</span>
     </div>`;
+
+  const controlButtonsHTML = !s.isCounter ? `
+    <div class="t-controls" style="justify-content:center; width:90px; color:${s.colorTheme}; font-weight:bold; font-size:1.1rem;">📊 Calc</div>` : `
+    <div class="t-controls">
+      <button class="btn-c btn-m" onclick="tally(${s.row},-1)">-</button>
+      <div class="t-count" id="c-${s.row}">${countDisplay}</div>
+      <button class="btn-c btn-p" onclick="tally(${s.row},1)">+</button>
+    </div>`;
+
   return `
     <div class="t-row" style="border-left: 4px solid ${s.colorTheme};">
-      <div class="t-controls">
-        <button class="btn-c btn-m" onclick="tally(${s.row},-1)">-</button>
-        <div class="t-count" id="c-${s.row}">${s.count}</div>
-        <button class="btn-c btn-p" onclick="tally(${s.row},1)">+</button>
-      </div>
+      ${controlButtonsHTML}
       <div class="t-stat" style="font-weight:500;">${s.name}</div>
       ${moneyHTML}
     </div>`;
+}
+
+// ==========================================
+// SPORT-AGNOSTIC LIVE CALCULATION ENGINE
+// ==========================================
+function calculateDynamicFormulas() {
+  if (!curData) return;
+
+  const formulaStats = curData.stats.filter(s => s.formula !== null);
+  const pMin = parseFloat(document.getElementById('pMin')?.value) || 0;
+  const tMin = parseFloat(document.getElementById('tMin')?.value) || 32;
+
+  formulaStats.forEach(fStat => {
+    let equation = fStat.formula;
+
+    // Substitute specific layout environment parameters
+    equation = equation.replaceAll('$pMin', pMin);
+    equation = equation.replaceAll('$tMin', tMin);
+
+    // Substitute standard count keys
+    curData.stats.forEach(s => {
+      equation = equation.replaceAll(`[${s.name}]`, s.count);
+    });
+
+    // Safely check for divide by zero markers or format crashes
+    if (equation.includes('NULLIF(')) {
+      equation = cleanPostgresNullifSyntax(equation);
+    }
+
+    try {
+      let result = eval(equation);
+      fStat.count = isFinite(result) && !isNaN(result) ? result : 0;
+    } catch (e) {
+      fStat.count = 0;
+    }
+  });
+}
+
+function cleanPostgresNullifSyntax(eq) {
+  // Simple regex processor to patch standard SQL NULLIF text mappings to JavaScript evaluations
+  // e.g., NULLIF(x, 0) transforms directly into: (x === 0 ? Infinity : x)
+  return eq.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
 }
 
 // ==========================================
@@ -327,7 +401,6 @@ async function loadHistory() {
   }
 }
 
-// RESTORED: Groups layout reporting categories using reportGroup metadata titles
 function renderHistory() {
   const body = document.getElementById('history-body');
   const head = document.getElementById('history-head');
@@ -342,27 +415,25 @@ function renderHistory() {
     return true;
   });
 
-  // Extract unique active visible metric items to dynamically append grouped sub-headers
   const visibleTemplates = curData.stats.filter(s => s.visible);
-  
-  // Extract distinct logical report categories
   const reportingGroups = [...new Set(visibleTemplates.map(s => s.reportGroup))];
 
-  // Layer A: Render Primary & Nested Categorized Meta Header Blocks
-  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2">Game Logs</th><th colspan="8">Universal Match Data</th>`;
-  let subRowHTML = `<tr><th>Date</th><th>Season</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
+  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle; padding:10px;">Game Logs</th><th colspan="8" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
+  let subRowHTML = `<tr style="background:#f2f4f4; font-size:0.85rem;"><th>Date</th><th>Season</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
 
   reportingGroups.forEach(groupName => {
     const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
     if (groupStats.length > 0) {
-      topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:#34495e; border-left:2px solid #fff;">${groupName}</th>`;
+      // Pull group thematic coloring cleanly out of database values index
+      const groupColor = groupStats[0].colorTheme;
+      topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupColor}; border-left:1px solid #fff;">${groupName}</th>`;
       groupStats.forEach(s => {
-        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:3px solid ${s.colorTheme}; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
+        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; font-weight:600; padding:6px; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
       });
     }
   });
 
-  topRowHTML += `<th rowspan="2" style="background:#27ae60;">Payout</th></tr>`;
+  topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center;">Payout</th></tr>`;
   subRowHTML += `</tr>`;
   head.innerHTML = topRowHTML + subRowHTML;
 
@@ -371,29 +442,46 @@ function renderHistory() {
     return;
   }
 
-  // Layer B: Flatten metrics matching the dynamically built column arrays
   body.innerHTML = filtered.map(g => {
     let statsColumnsHTML = '';
+    
+    // Simulate current state values to resolve calculated formulas dynamically on log histories arrays
+    const histStatsInstance = curData.stats.map(s => ({
+      name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
+    }));
+
+    // Re-run evaluation processor on historic object snapshots
+    const formulaStats = histStatsInstance.filter(s => s.formula !== null);
+    formulaStats.forEach(fStat => {
+      let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
+      histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
+      if (equation.includes('NULLIF(')) equation = cleanPostgresNullifSyntax(equation);
+      try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
+    });
+
     reportingGroups.forEach(groupName => {
       const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
       groupStats.forEach(s => {
-        const value = g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0;
-        statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff;">${value}</td>`;
+        const matchingInstance = histStatsInstance.find(x => x.name === s.name);
+        let displayVal = matchingInstance ? matchingInstance.count : 0;
+        let formattedStr = s.section === 'advanced' ? displayVal.toFixed(1) + (s.name.includes('%') ? '%' : '') : displayVal;
+        
+        statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff; border-left:1px solid #f2f4f4;">${formattedStr}</td>`;
       });
     });
 
     return `
-      <tr>
-        <td style="font-weight:bold; white-space:nowrap;">${g.date}</td>
-        <td>${g.season}</td>
-        <td style="text-align:left; font-weight:500;">${g.opp}</td>
-        <td><span class="badge ${g.loc === 'H' ? 'badge-home' : 'badge-away'}">${g.loc}</span></td>
-        <td><strong>${g.res}</strong></td>
+      <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
+        <td style="font-weight:bold; white-space:nowrap; text-align:left; padding:8px;">${g.date}</td>
+        <td style="color:#7f8c8d;">${g.season}</td>
+        <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
+        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
+        <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
         <td>${g.su}</td>
         <td>${g.st}</td>
         <td>${g.min}</td>
         ${statsColumnsHTML}
-        <td style="font-weight:bold;color:#27ae60; background:#f4fbf7;">$${g.money.toFixed(2)}</td>
+        <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
       </tr>`;
   }).join('');
 }
@@ -430,7 +518,10 @@ async function saveGame() {
     if (headerError) throw headerError;
     const generatedLogId = savedHeader.id;
 
-    const valuesPayload = curData.stats.map(s => ({
+    // Filters out calculation elements since advanced formulas generate dynamically on readings
+    const rawCountersOnly = curData.stats.filter(s => s.formula === null);
+
+    const valuesPayload = rawCountersOnly.map(s => ({
       game_log_id: generatedLogId,
       template_id: s.row, 
       stat_value: s.count
@@ -533,32 +624,26 @@ function tally(r, a) {
   if (!s) return;
   
   s.count = Math.max(0, s.count + a);
-  document.getElementById(`c-${r}`).innerText = s.count;
-
+  
   if (a > 0) {
     if (s.name.includes('🎯 2PT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
-      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+      if (attRow) attRow.count++; 
     } else if (s.name.includes('🥅 FT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 FT Attempt'));
-      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+      if (attRow) attRow.count++; 
     } else if (s.name.includes('👌 3PT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'));
-      if (attRow) { attRow.count++; document.getElementById(`c-${attRow.row}`).innerText = attRow.count; }
+      if (attRow) attRow.count++; 
     }
   }
 
-  if (s.section !== 'team') {
-    document.getElementById(`sub-${r}`).innerText = `$${(s.count * s.price).toFixed(2)}`;
-    curData.stats.forEach(x => {
-      const el = document.getElementById(`sub-${x.row}`);
-      if (el && x.section !== 'team') el.innerText = `$${(x.count * x.price).toFixed(2)}`;
-    });
-  }
-  recalcTotal();
-  checkAchievementsAndProtections();
+  // Dynamically re-trigger math parser equations values
+  calculateDynamicFormulas();
+  render(curData);
 }
 
+// FIXED: Patch inline template attributes handlers dependencies
 function checkAchievementsAndProtections() {
   if (!curData) return;
   
@@ -630,7 +715,7 @@ function toggleVis(row, val) {
   render(curData);
 }
 
-function triggerSync() { checkAchievementsAndProtections(); }
+function triggerSync() { calculateDynamicFormulas(); checkAchievementsAndProtections(); }
 function editPrice() {}
 function commitGameEdit() {}
 function closeEditModal() {}
