@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isAppInitialized) return; // Prevent loop recursions
+  if (isAppInitialized) return;
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
@@ -41,7 +41,6 @@ function updateStatus(msg, isError) {
   }
 }
 
-// Interactive Password Eye Peak and Icon Shifter
 function togglePasswordVisibility() {
   const passwordInput = document.getElementById('auth-password');
   const toggleBtn = document.getElementById('toggle-password-btn');
@@ -49,14 +48,13 @@ function togglePasswordVisibility() {
 
   if (passwordInput.type === 'password') {
     passwordInput.type = 'text';
-    toggleBtn.innerText = '🙈'; // Shift icon to hiding/closed state
+    toggleBtn.innerText = '🙈';
   } else {
     passwordInput.type = 'password';
-    toggleBtn.innerText = '👁️'; // Shift icon back to open/reveal state
+    toggleBtn.innerText = '👁️';
   }
 }
 
-// Smart Registration Visibility Toggle
 function smartRegister() {
   const accessKeyInput = document.getElementById('auth-access-key');
   if (accessKeyInput) {
@@ -69,7 +67,6 @@ function smartRegister() {
   }
 }
 
-// Master Portal Authentication Engine Action Routing
 async function handleAuthAction(actionType) {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
@@ -91,8 +88,7 @@ async function handleAuthAction(actionType) {
         return;
       }
       updateStatus("Validating access and registering...", false);
-      
-      // Perform SignUp transaction profile mapping
+
       const { data, error } = await bballDb.auth.signUp({
         email,
         password,
@@ -107,14 +103,15 @@ async function handleAuthAction(actionType) {
   }
 }
 
+// FIXED: Searches by user_id instead of id to prevent the 400 Bad Request error
 async function fetchUserProfile(userId) {
-  console.log("Fetching profile for:", userId);
+  console.log("Fetching profile for user ID:", userId);
   try {
     let { data: profile, error } = await bballDb
-      .from('profiles') 
+      .from('profiles')
       .select('family_id')
-      .eq('id', userId)
-      .single();
+      .eq('user_id', userId)
+      .maybeSingle();
 
     if (!error && profile) {
       currentFamilyId = profile.family_id;
@@ -123,7 +120,7 @@ async function fetchUserProfile(userId) {
     await loadInitialApplicationState();
   } catch (err) {
     console.error("Profile Fetch Warning:", err);
-    await loadInitialApplicationState(); // Fallback to default group container state rules
+    await loadInitialApplicationState();
   }
 }
 
@@ -141,13 +138,13 @@ async function loadInitialApplicationState() {
         global_metric_templates (id, stat_name, section, is_counter, default_price)
       `)
       .eq("family_id", currentFamilyId)
-      .eq("global_metric_templates.app_type", "basketball:solo"); 
+      .eq("global_metric_templates.app_type", "basketball:solo");
 
     if (error) throw error;
 
     if (!configs || configs.length === 0) {
-      console.log("New account detected. Seeding personal settings from global templates via Database RPC...");
-      
+      console.log("New account detected. Seeding personal settings from global templates...");
+
       const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
         target_family_id: currentFamilyId,
         target_app_type: 'basketball:solo'
@@ -157,13 +154,16 @@ async function loadInitialApplicationState() {
       return await loadInitialApplicationState();
     }
 
+    // Sort configurations dynamically by database template ID to keep list ordering exact
+    configs.sort((a, b) => a.global_metric_templates.id - b.global_metric_templates.id);
+
     const formattedStats = configs.map((c) => ({
       name: c.global_metric_templates.stat_name,
       price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
       count: 0,
       visible: c.visible,
-      row: c.global_metric_templates.id, 
-      section: c.global_metric_templates.section 
+      row: c.global_metric_templates.id,
+      section: c.global_metric_templates.section
     }));
 
     curData = {
@@ -190,14 +190,14 @@ async function loadInitialApplicationState() {
 function render(d) {
   curData = d;
   document.getElementById('opp').value = d.opp || "";
-  setLoc(d.loc); 
+  setLoc(d.loc);
   setWL(d.res);
   document.getElementById('scoreUs').value = d.su || "";
   document.getElementById('scoreThem').value = d.st || "";
   document.getElementById('pMin').value = d.pm || "";
   document.getElementById('tMin').value = d.tm || "32";
-  if(document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
-  
+  if (document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
+
   const dl = document.getElementById('seasonList');
   if (dl) {
     dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
@@ -218,7 +218,7 @@ function render(d) {
         <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
       </div>`).join('');
   }
-  
+
   recalcTotal();
   applyLayoutOrder();
 }
@@ -242,18 +242,16 @@ function rowHTML(s) {
     </div>`;
 }
 
-// ==========================================
-// APP LOGS HISTORY AND ARCHIVE MANAGER
-// ==========================================
+// FIXED: References 'game_logs' instead of 'games' to match cache definition schemas
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
   if (historyBody) {
     historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
   }
-  
+
   try {
     let { data: games, error } = await bballDb
-      .from("games") 
+      .from("game_logs")
       .select("*")
       .eq("family_id", currentFamilyId)
       .order("date", { ascending: false });
@@ -261,7 +259,7 @@ async function loadHistory() {
     if (error) throw error;
 
     histData = (games || []).map(g => ({
-      sheetRow: g.id, 
+      sheetRow: g.id,
       date: g.date,
       season: g.season || "Season 1",
       opp: g.opponent,
@@ -316,25 +314,25 @@ async function loadHistory() {
 function switchTab(t) {
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  
+
   const targetPage = document.getElementById('page-' + t);
   const targetTab = document.getElementById('tab-' + t);
-  
+
   if (targetPage) targetPage.style.display = 'block';
   if (targetTab) targetTab.classList.add('active');
-  
+
   if (t === 'history' && histData.length === 0) loadHistory();
   if (t === 'history' && histData.length > 0) renderHistory();
 }
 
-function autoWL(){
+function autoWL() {
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'T' : 'L'));
+  if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
   triggerSync();
 }
 
-function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
-function setWL(w){curWL=w;['btnWin','btnTie','btnLoss'].forEach(b=>document.getElementById(b).classList.remove('active'));if(w)document.getElementById(w==='W'?'btnWin':(w==='T'?'btnTie':'btnLoss')).classList.add('active')}
+function setLoc(h) { isHome = h; document.getElementById('btnHome').classList.toggle('active', h); document.getElementById('btnAway').classList.toggle('active', !h) }
+function setWL(w) { curWL = w;['btnWin', 'btnTie', 'btnLoss'].forEach(b => document.getElementById(b).classList.remove('active')); if (w) document.getElementById(w === 'W' ? 'btnWin' : (w === 'T' ? 'btnLoss')).classList.add('active') }
 
 function updateDefaultTMin(val) {
   document.getElementById('tMin').value = val;
@@ -351,7 +349,7 @@ function applyLayoutOrder() {
   const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
   const container = document.getElementById('tracker-boards-container');
   if (!container) return;
-  
+
   order.forEach(id => {
     const wrapper = document.getElementById('wrap-' + id);
     if (wrapper) container.appendChild(wrapper);
@@ -381,5 +379,5 @@ function toggleVis(row, val) {
   render(curData);
 }
 
-function triggerSync() {}
-function renderHistory() {}
+function triggerSync() { }
+function renderHistory() { }
