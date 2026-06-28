@@ -5,7 +5,7 @@ const supabaseUrl = "https://upgfhekhifolcqiudhzy.supabase.co"; // <-- Replace w
 const supabaseKey = "sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U"; // <-- Replace with your Anon Public Key
 
 const bballDb = window.supabase.createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: true, autoRefreshToken: true },
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bball-tracker-auth', },
 });
 
 let authenticatedUser = null;
@@ -20,13 +20,13 @@ let isProcessingAuth = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🏀 DOM tree fully constructed.");
-  
+
   // Existing initialization code (e.g., loading themes, checking sessions)
   checkActiveSession();
 
   const passwordField = document.getElementById("auth-password");
   if (passwordField) {
-    passwordField.addEventListener("keypress", function(event) {
+    passwordField.addEventListener("keypress", function (event) {
       if (event.key === "Enter") {
         event.preventDefault();
         handleAuthAction("login");
@@ -70,10 +70,21 @@ async function handleAuthAction(type) {
   try {
     // 1. Sign In
     const { data, error } = await bballDb.auth.signInWithPassword({ email, password: pass });
-    if (error) throw error;
+
+
+    if (error) {
+      console.error("Login failed:", error.message);
+      // STOP HERE so it doesn't try to fetch the profile
+      return;
+    }
+
+    // FORCE a refresh to ensure the client acknowledges the session immediately
+    await bballDb.auth.refreshSession();
 
     // 2. Define userId AFTER login succeeds
     const userId = data.session?.user?.id;
+    console.log("Fetching profile for:", userId);
+
     if (!userId) throw new Error("Login succeeded but no user ID found.");
     console.log("Fetching profile for:", userId);
 
@@ -84,7 +95,7 @@ async function handleAuthAction(type) {
       .eq("user_id", userId)
       .maybeSingle();
 
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Database request timed out!")), 5000)
     );
 
@@ -103,7 +114,7 @@ async function handleAuthAction(type) {
     document.getElementById("main-app-content").style.display = "block";
 
   } catch (err) {
-    console.error("Auth Error:", err);
+    console.error("Critical error:", err);
     updateStatus("Error: " + err.message, true);
   } finally {
     isProcessing = false;
@@ -163,7 +174,7 @@ async function loadInitialApplicationState() {
     // 2. Now 'error' is defined and safe to check
     if (error) throw error;
     console.log("Configs loaded:", configs);
-	
+
     if (!configs || configs.length === 0) {
       console.log("No configs found, upserting defaults...");
       const defaults = [
@@ -172,12 +183,12 @@ async function loadInitialApplicationState() {
         { stat_name: "Assists", price: 0.25, visible: true, family_id: currentFamilyId },
       ];
       await bballDb.from("app_configs").upsert(defaults);
-      
+
       const { data: reFetched, error: refetchError } = await bballDb
         .from("app_configs")
         .select("*")
         .eq("family_id", currentFamilyId);
-      
+
       if (refetchError) throw refetchError;
       configs = reFetched;
     }
@@ -192,9 +203,9 @@ async function loadInitialApplicationState() {
         row: i + 2,
       })),
     };
-    
+
     render(curData);
-    
+
     // 3. UI switch logic added here to fix your white page issue
     document.getElementById("auth-overlay").style.display = "none";
     document.getElementById("main-app-content").style.display = "block";
@@ -204,7 +215,7 @@ async function loadInitialApplicationState() {
     console.error("CRITICAL UI ERROR:", err);
     updateStatus("Error loading data: " + err.message, true);
   }
-}	
+}
 function render(d) {
   curData = d;
   const setVal = (id, val) => {
