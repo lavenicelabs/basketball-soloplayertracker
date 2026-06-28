@@ -10,13 +10,27 @@ let pendingSync = false;
 let currentFamilyId = 'default_family';
 let isAppInitialized = false;
 
-// Initialize Date Input Default Settings
+// Initialize Event Listeners on DOM Load
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const dateInput = document.getElementById('gameDate');
   if (dateInput) {
     dateInput.value = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
   }
+
+  // RESTORED: Auto-click Sign-In button when pressing Enter on password/email inputs
+  const passwordInput = document.getElementById('auth-password');
+  const emailInput = document.getElementById('auth-email');
+  
+  const handleEnterKey = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleAuthAction('login');
+    }
+  };
+
+  if (passwordInput) passwordInput.addEventListener('keydown', handleEnterKey);
+  if (emailInput) emailInput.addEventListener('keydown', handleEnterKey);
 });
 
 // ==========================================
@@ -103,7 +117,6 @@ async function handleAuthAction(actionType) {
   }
 }
 
-// FIXED: Filter profiles using 'user_id' parameter to patch the 400 Bad Request error
 async function fetchUserProfile(userId) {
   console.log("Fetching profile for user ID:", userId);
   try {
@@ -154,7 +167,6 @@ async function loadInitialApplicationState() {
       return await loadInitialApplicationState();
     }
 
-    // Sort configurations dynamically by template index sequence
     configs.sort((a, b) => a.global_metric_templates.id - b.global_metric_templates.id);
 
     const formattedStats = configs.map((c) => ({
@@ -220,7 +232,7 @@ function render(d) {
   }
   
   recalcTotal();
-  checkAchievements(); // Re-evaluate performance banners live on stat edits
+  checkAchievements(); 
   applyLayoutOrder();
 }
 
@@ -243,10 +255,6 @@ function rowHTML(s) {
     </div>`;
 }
 
-// ==========================================
-// APP LOGS HISTORY AND ARCHIVE MANAGER
-// ==========================================
-// FIXED: Queries public.app_history table endpoint directly to resolve 404 cache crashes
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
   if (historyBody) {
@@ -336,7 +344,19 @@ function autoWL(){
 }
 
 function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
-function setWL(w){curWL=w;['btnWin','btnTie','btnLoss'].forEach(b=>document.getElementById(b).classList.remove('active'));if(w)document.getElementById(w==='W'?'btnWin':(w==='T'?'btnLoss')).classList.add('active')}
+
+// FIXED: Patched unclosed ternary statement caught inside line 339 of image_40a1ca.png
+function setWL(w){
+  curWL=w;
+  ['btnWin','btnTie','btnLoss'].forEach(b => {
+    const el = document.getElementById(b);
+    if (el) el.classList.remove('active');
+  });
+  
+  const targetId = w === 'W' ? 'btnWin' : (w === 'T' ? 'btnTie' : 'btnLoss');
+  const targetEl = document.getElementById(targetId);
+  if (targetEl) targetEl.classList.add('active');
+}
 
 function updateDefaultTMin(val) {
   document.getElementById('tMin').value = val;
@@ -366,7 +386,6 @@ function recalcTotal() {
   document.getElementById('totalVal').innerText = `$${t.toFixed(2)}`;
 }
 
-// RESTORED: Automated attempt linkage workflow rules
 function tally(r, a) {
   const s = curData.stats.find(x => x.row === r);
   if (!s) return;
@@ -374,7 +393,6 @@ function tally(r, a) {
   s.count = Math.max(0, s.count + a);
   document.getElementById(`c-${r}`).innerText = s.count;
 
-  // Automated linkage logic: Increment an attempt row concurrently when a point is made
   if (a > 0) {
     if (s.name.includes('🎯 2PT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
@@ -390,7 +408,6 @@ function tally(r, a) {
 
   if (s.section !== 'team') {
     document.getElementById(`sub-${r}`).innerText = `$${(s.count * s.price).toFixed(2)}`;
-    // Re-render linked attempt price rows for accurate totals formatting updates
     curData.stats.forEach(x => {
       const el = document.getElementById(`sub-${x.row}`);
       if (el && x.section !== 'team') el.innerText = `$${(x.count * x.price).toFixed(2)}`;
@@ -400,7 +417,6 @@ function tally(r, a) {
   checkAchievements();
 }
 
-// RESTORED: Dynamic live verification of milestones like Double-Doubles or Triple-Doubles
 function checkAchievements() {
   if (!curData) return;
   
