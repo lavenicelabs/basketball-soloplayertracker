@@ -1,310 +1,256 @@
-function setDisplay(id, displayValue) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.style.display = displayValue;
-  } else {
-    console.warn(`Element with id '${id}' not found. Skipping style update.`);
-  }
-}
+// Initialize Supabase Client Connection
+// Ensure your actual Supabase URL and Anon Key are configured correctly below
+const bballDb = supabase.createClient('https://upgfhekhifolcqiudhzy.supabase.co', 'sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U');
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOM fully loaded - safe to look for IDs");
-  // Your initialization code here
-});
-
-// ==========================================
-// 1. GLOBAL INITIALIZATION
-// ==========================================
-const supabaseUrl = "https://upgfhekhifolcqiudhzy.supabase.co"; // <-- Replace with your Project URL
-const supabaseKey = "sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U"; // <-- Replace with your Anon Public Key
-
-const bballDb = window.supabase.createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storageKey: 'bball-tracker-auth', // Consistent naming
-    // ADD THIS: This clears invalid sessions automatically
-    persistSession: true
-  },
-});
-
-// Force sign out if the session is invalid instead of hanging
-bballDb.auth.onAuthStateChange((event, session) => {
-  if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
-    console.log("Auth State Changed: Session active");
-  }
-  if (event === 'SIGNED_OUT') {
-    console.warn("Auth State Changed: User signed out");
-    window.location.reload();
-  }
-});
-
-let authenticatedUser = null;
-let currentFamilyId = null;
 let curData = null;
 let updateTimer = null;
 let isHome = true;
-let curWL = "W";
+let curWL = 'W';
 let histData = [];
 let pendingSync = false;
-let isProcessingAuth = false;
+let currentFamilyId = 'default_family';
+let isAppInitialized = false;
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("🏀 DOM tree fully constructed.");
-
-  // Existing initialization code (e.g., loading themes, checking sessions)
-  checkActiveSession();
-
-  const passwordField = document.getElementById("auth-password");
-  if (passwordField) {
-    passwordField.addEventListener("keypress", function (event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        handleAuthAction("login");
-      }
-    });
+// Initialize Date Input Default Settings
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const dateInput = document.getElementById('gameDate');
+  if (dateInput) {
+    dateInput.value = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
   }
 });
 
 // ==========================================
-// 2. IDENTITY & SESSION PORTAL LOGIC
-// ==========================================
-function showRegister() {
-  const keyBox = document.getElementById("auth-access-key");
-  if (keyBox) {
-    keyBox.style.display = "block";
-    document.getElementById("auth-message").innerText =
-      "Enter your details and Access Key to register.";
-  }
-}
-
-function smartRegister() {
-  const keyBox = document.getElementById("auth-access-key");
-  if (keyBox.style.display === "none" || keyBox.style.display === "") {
-    showRegister();
-  } else {
-    handleAuthAction("signup");
-  }
-}
-
-// Add a variable to prevent double-clicks
-let isProcessing = false;
-
-async function handleAuthAction(type) {
-  if (isProcessing) return;
-  isProcessing = true;
-
-  const email = document.getElementById("auth-email").value;
-  const pass = document.getElementById("auth-password").value;
-  updateStatus("Processing...");
-
-  try {
-    // 1. Sign In
-    const { data, error } = await bballDb.auth.signInWithPassword({ email, password: pass });
-
-
-    if (error) {
-      console.error("Login failed:", error.message);
-      // STOP HERE so it doesn't try to fetch the profile
-      return;
-    }
-
-    // FORCE a refresh to ensure the client acknowledges the session immediately
-    await bballDb.auth.refreshSession();
-
-    // 2. Define userId AFTER login succeeds
-    const userId = data.session?.user?.id;
-    console.log("Fetching profile for:", userId);
-
-    if (!userId) throw new Error("Login succeeded but no user ID found.");
-    console.log("Fetching profile for:", userId);
-
-    // 3. Setup the race
-    const fetchPromise = bballDb
-      .from("profiles")
-      .select("family_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Database request timed out!")), 5000)
-    );
-
-    // 4. Race
-    const { data: profile, error: profileError } = await Promise.race([fetchPromise, timeoutPromise]);
-
-    if (profileError) throw profileError;
-    if (!profile) throw new Error("Profile not found.");
-
-    currentFamilyId = profile.family_id;
-    console.log("Profile fetched. Family ID:", currentFamilyId);
-
-    await loadInitialApplicationState();
-
-    //document.getElementById("auth-overlay").style.display = "none";
-    // document.getElementById("main-app-content").style.display = "block";
-
-    setDisplay('auth-overlay', 'none');
-    setDisplay('main-app-container', 'block');
-
-  } catch (err) {
-    console.error("Critical error:", err);
-    updateStatus("Error: " + err.message, true);
-  } finally {
-    isProcessing = false;
-  }
-}
-
-// ==========================================
-// 3. AUTHENTICATION ENGINE
+// AUTHENTICATION & PORTAL STATE TRACKING
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isProcessingAuth) return;
-  isProcessingAuth = true;
+  if (isAppInitialized) return; // Prevent loop recursions
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
-    if (session) await checkActiveSession();
-  } else if (event === "SIGNED_OUT") {
-    location.reload();
+    if (session) {
+      isAppInitialized = true;
+      await fetchUserProfile(session.user.id);
+    }
   }
-  isProcessingAuth = false;
 });
 
-async function checkActiveSession() {
+async function fetchUserProfile(userId) {
+  console.log("Fetching profile for:", userId);
   try {
-    const {
-      data: { session },
-    } = await bballDb.auth.getSession();
-    if (session) {
-      authenticatedUser = session.user;
-      const { data: profile } = await bballDb
-        .from("profiles")
-        .select("family_id")
-        .eq("user_id", authenticatedUser.id)
-        .maybeSingle();
+    let { data: profile, error } = await bballDb
+      .from('profiles') // Adjust if your profiles table has a variant name
+      .select('family_id')
+      .eq('id', userId)
+      .single();
 
-      currentFamilyId = profile?.family_id || "default_family";
-
-      //document.getElementById("auth-overlay").style.display = "none";
-      //document.getElementById("main-app-content").style.display = "block";
-
-      setDisplay('auth-overlay', 'none');
-      setDisplay('main-app-container', 'block');
-
-      await loadInitialApplicationState();
+    if (!error && profile) {
+      currentFamilyId = profile.family_id;
     }
+    console.log("Profile mapped. Family ID:", currentFamilyId);
+    await loadInitialApplicationState();
   } catch (err) {
-    console.error("Session error: ", err);
+    console.error("Profile Fetch Warning:", err);
+    await loadInitialApplicationState(); // Fallback to default family tier
   }
 }
 
 // ==========================================
-// 4. APP LOGIC & RENDERING
+// INITIAL APPLICATION DATA POPULATION ENGINE
 // ==========================================
 async function loadInitialApplicationState() {
   console.log("Loading app state for family:", currentFamilyId);
   try {
-    // 1. Correct destructuring to capture the 'error' object
+    // 1. Query individual config overrides matching template parameters
     let { data: configs, error } = await bballDb
-      .from("app_configs")
-      .select("stat_name, price, visible")
+      .from("user_metric_settings")
+      .select(`
+        visible,
+        custom_price,
+        global_metric_templates (id, stat_name, section, is_counter, default_price)
+      `)
       .eq("family_id", currentFamilyId)
-      .order("id", { ascending: true });
+      .eq("global_metric_templates.app_type", "basketball:solo"); // Target new structured slug context
 
-    // 2. Now 'error' is defined and safe to check
     if (error) throw error;
-    console.log("Configs loaded:", configs);
 
+    // 2. FALLBACK SEED LOGIC: Invoke database RPC routine directly if configurations are missing
     if (!configs || configs.length === 0) {
-      console.log("No configs found, upserting defaults...");
-      const defaults = [
-        { stat_name: "Rebounds", price: 0.25, visible: true, family_id: currentFamilyId },
-        { stat_name: "Steals", price: 0.5, visible: true, family_id: currentFamilyId },
-        { stat_name: "Assists", price: 0.25, visible: true, family_id: currentFamilyId },
-      ];
-      await bballDb.from("app_configs").upsert(defaults);
+      console.log("New account detected. Seeding personal settings from global templates via Database RPC...");
+      
+      const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
+        target_family_id: currentFamilyId,
+        target_app_type: 'basketball:solo' // Exact snippet location context
+      });
 
-      const { data: reFetched, error: refetchError } = await bballDb
-        .from("app_configs")
-        .select("*")
-        .eq("family_id", currentFamilyId);
+      if (seedError) throw seedError;
 
-      if (refetchError) throw refetchError;
-      configs = reFetched;
+      // Re-fetch configuration mappings now that tracking states are seeded
+      return await loadInitialApplicationState();
     }
+
+    // 3. Map complex structural joints down into flat data object layers that render layout loops expect
+    const formattedStats = configs.map((c) => ({
+      name: c.global_metric_templates.stat_name,
+      price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
+      count: 0,
+      visible: c.visible,
+      row: c.global_metric_templates.id, // Primary numerical tracker key 
+      section: c.global_metric_templates.section // Universal layout category assignment
+    }));
 
     curData = {
       opp: "", su: "", st: "", loc: true, res: "W", pm: "", tm: 32,
-      stats: (configs || []).map((c, i) => ({
-        name: c.stat_name,
-        price: Number(c.price),
-        count: 0,
-        visible: c.visible,
-        row: i + 2,
-      })),
+      seasons: ["Season 1"],
+      stats: formattedStats
     };
 
+    // Trigger local layout generators
     render(curData);
 
-    // 3. UI switch logic added here to fix your white page issue
-    //document.getElementById("auth-overlay").style.display = "none";
-    //document.getElementById("main-app-content").style.display = "block";
-
-    setDisplay('auth-overlay', 'none');
-    setDisplay('main-app-container', 'block');
-
-    console.log("UI Switched to main content.");
-
-    const mainContent = document.getElementById("main-app-container");
-    console.log("Main container found:", mainContent);
+    // Swap security overlay display states out
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('main-app-container').style.display = 'block';
+    console.log("Application initialization sequence parsed cleanly.");
 
   } catch (err) {
-    console.error("CRITICAL UI ERROR:", err);
-    updateStatus("Error loading data: " + err.message, true);
+    console.error("CRITICAL CONFIGURATION MAP LOOP FAILURE:", err);
+    const statusEl = document.getElementById('auth-status');
+    if (statusEl) statusEl.innerText = "Error parsing initialization configurations: " + err.message;
   }
-}
-
-function render(d) {
-  const container = document.getElementById("main-app-container");
-  if (!container) return;
-
-  // If the container is empty, inject the tracker UI structure first
-  if (container.innerHTML === "") {
-    container.innerHTML = `
-      <div id="tracker-interface">
-        <input type="text" id="opp" placeholder="Opponent">
-        <input type="number" id="scoreUs" placeholder="Our Score">
-        </div>
-    `;
-  }
-
-  // Now update the values of the fields you just injected
-  const setVal = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.value = val || "";
-  };
-  setVal("opp", d.opp);
-  setVal("scoreUs", d.su);
-  // ... set the rest of your values
-}
-
-function updateStatus(msg, err) {
-  const el = document.getElementById("auth-status");
-  if (el) {
-    el.innerText = msg;
-    el.style.color = err ? "red" : "green";
-  }
-}
-
-function togglePasswordVisibility() {
-  const pf = document.getElementById("auth-password");
-  if (pf) pf.type = pf.type === "password" ? "text" : "password";
 }
 
 // ==========================================
-// CORE VIEW CONTROLLER ENGINE
+// CORE LAYOUT GENERATION & INTERFACE FILTERS
+// ==========================================
+function render(d) {
+  curData = d;
+  document.getElementById('opp').value = d.opp || "";
+  setLoc(d.loc); 
+  setWL(d.res);
+  document.getElementById('scoreUs').value = d.su || "";
+  document.getElementById('scoreThem').value = d.st || "";
+  document.getElementById('pMin').value = d.pm || "";
+  document.getElementById('tMin').value = d.tm || "32";
+  if(document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
+  
+  // Build season dropdown context options
+  const dl = document.getElementById('seasonList');
+  if (dl) {
+    dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
+  }
+  if (!document.getElementById('season').value && d.seasons.length > 0) {
+    document.getElementById('season').value = d.seasons[d.seasons.length - 1];
+  }
+
+  // SPORT AGNOSTIC CONTEXT RENDERING: Filters by metric sections strings instead of numbers
+  document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
+  document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
+  document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
+
+  // Dynamically populate options list in settings view panel
+  const settingsContainer = document.getElementById('settings-list');
+  if (settingsContainer) {
+    settingsContainer.innerHTML = d.stats.map(s => `
+      <div class="toggle-row">
+        <span style="font-weight:bold;">${s.name}</span>
+        <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
+      </div>`).join('');
+  }
+  
+  recalcTotal();
+  applyLayoutOrder();
+}
+
+function rowHTML(s) {
+  const isTeam = s.section === 'team';
+  const moneyHTML = isTeam ? '' : `
+    <div class="t-money">
+      <div class="t-price" id="price-${s.row}" onclick="editPrice(${s.row},'${s.name.replace(/'/g, "\\'")}',${s.price})">$${s.price.toFixed(2)} ea</div>
+      <span class="t-sub" id="sub-${s.row}">$${(s.count * s.price).toFixed(2)}</span>
+    </div>`;
+  return `
+    <div class="t-row">
+      <div class="t-controls">
+        <button class="btn-c btn-m" onclick="tally(${s.row},-1)">-</button>
+        <div class="t-count" id="c-${s.row}">${s.count}</div>
+        <button class="btn-c btn-p" onclick="tally(${s.row},1)">+</button>
+      </div>
+      <div class="t-stat">${s.name}</div>
+      ${moneyHTML}
+    </div>`;
+}
+
+// ==========================================
+// APP LOGS HISTORY AND ARCHIVE MANAGER
+// ==========================================
+async function loadHistory() {
+  const historyBody = document.getElementById('history-body');
+  if (historyBody) {
+    historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
+  }
+  
+  try {
+    let { data: games, error } = await bballDb
+      .from("games") 
+      .select("*")
+      .eq("family_id", currentFamilyId)
+      .order("date", { ascending: false });
+
+    if (error) throw error;
+
+    histData = (games || []).map(g => ({
+      sheetRow: g.id, 
+      date: g.date,
+      season: g.season || "Season 1",
+      opp: g.opponent,
+      loc: g.location === "Home" ? "H" : "A",
+      res: g.result,
+      su: g.score_us,
+      st: g.score_them,
+      min: g.player_minutes,
+      tmin: g.team_minutes,
+      money: Number(g.total_payout || 0),
+      reb: g.rebounds || 0,
+      stl: g.steals || 0,
+      def: g.deflections || 0,
+      jmp: g.jump_balls || 0,
+      blk: g.blocks || 0,
+      cont: g.contested_shots || 0,
+      scrn: g.screens_set || 0,
+      chg: g.charges_drawn || 0,
+      p2m: g.two_pm || 0,
+      p2a: g.two_pa || 0,
+      ftm: g.ft_m || 0,
+      fta: g.ft_a || 0,
+      ptm3: g.three_pm || 0,
+      pta3: g.three_pa || 0,
+      ast: g.assists || 0,
+      to: g.turnovers || 0,
+      tfga: g.team_fga || 0,
+      tfta: g.team_fta || 0,
+      tto: g.team_to || 0,
+      isDel: g.is_deleted || false
+    }));
+
+    const seasons = [...new Set(histData.map(x => x.season))];
+    const filterSelect = document.getElementById('seasonFilter');
+    if (filterSelect) {
+      filterSelect.innerHTML = seasons.map(x => `<option value="${x}">${x}</option>`).join('');
+      if (seasons.length > 0) filterSelect.value = seasons[seasons.length - 1];
+    }
+
+    renderHistory();
+  } catch (err) {
+    console.error("History Loading Error:", err);
+    if (historyBody) {
+      historyBody.innerHTML = `<tr><td colspan="40" style="color:red;text-align:center;">Error: ${err.message}</td></tr>`;
+    }
+  }
+}
+
+// ==========================================
+// NAVIGATION UTILITIES & APP VIEW ENGINE
 // ==========================================
 function switchTab(t) {
-  // Correctly hide all page containers safely
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   
@@ -318,63 +264,59 @@ function switchTab(t) {
   if (t === 'history' && histData.length > 0) renderHistory();
 }
 
-// ==========================================
-// DYNAMIC APP CONFIGURATION HANDLING
-// ==========================================
-async function loadInitialApplicationState() {
-  console.log("Loading app state for family:", currentFamilyId);
-  try {
-    // 1. Query individual config mapping matching template parameters
-    let { data: configs, error } = await bballDb
-      .from("user_metric_settings")
-      .select(`
-        visible,
-        custom_price,
-        global_metric_templates (id, stat_name, section, is_counter, default_price)
-      `)
-      .eq("family_id", currentFamilyId);
-
-    if (error) throw error;
-
-    // 2. FALLBACK SEED ENGINE: Invoke your database RPC routine directly if configuration rows are missing
-    if (!configs || configs.length === 0) {
-      console.log("New account detected. Seeding personal settings from global templates via Database RPC...");
-      
-      const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
-        target_family_id: currentFamilyId,
-        target_app_type: 'basketball'
-      });
-
-      if (seedError) throw seedError;
-
-      // Re-fetch clean states now that tracking is populated
-      return await loadInitialApplicationState();
-    }
-
-    // 3. Map complex structural joins down into flat data object rules that your legacy render() expects
-    const formattedStats = configs.map((c, index) => ({
-      name: c.global_metric_templates.stat_name,
-      price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
-      count: 0,
-      visible: c.visible,
-      row: c.global_metric_templates.id
-    }));
-
-    curData = {
-      opp: "", su: "", st: "", loc: true, res: "W", pm: "", tm: 32,
-      seasons: ["Season 1"], // Fallback placeholder logic
-      stats: formattedStats
-    };
-
-    // Trigger local layout generators safely
-    render(curData);
-
-    setDisplay('auth-overlay', 'none');
-    setDisplay('main-app-container', 'block');
-    console.log("UI Switched to main content safely.");
-
-  } catch (err) {
-    console.error("CRITICAL UI ERROR:", err);
-    updateStatus("Error loading user configurations: " + err.message, true);
-  }
+function autoWL(){
+  const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
+  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+  triggerSync();
 }
+
+function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
+function setWL(w){curWL=w;['btnWin','btnTie','btnLoss'].forEach(b=>document.getElementById(b).classList.remove('active'));if(w)document.getElementById(w==='W'?'btnWin':(w==='T'?'btnTie':'btnLoss')).classList.add('active')}
+
+function updateDefaultTMin(val) {
+  document.getElementById('tMin').value = val;
+  triggerSync();
+}
+
+function updateLayoutOrder() {
+  const order = document.getElementById('layoutOrder').value.split(',');
+  localStorage.setItem('hoopStatsLayout', JSON.stringify(order));
+  applyLayoutOrder();
+}
+
+function applyLayoutOrder() {
+  const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
+  const container = document.getElementById('tracker-boards-container');
+  if (!container) return;
+  
+  order.forEach(id => {
+    const wrapper = document.getElementById('wrap-' + id);
+    if (wrapper) container.appendChild(wrapper);
+  });
+}
+
+function recalcTotal() {
+  if (!curData) return;
+  let t = curData.stats.reduce((s, x) => s + (x.count * x.price), 0);
+  document.getElementById('totalVal').innerText = `$${t.toFixed(2)}`;
+}
+
+function tally(r, a) {
+  const s = curData.stats.find(x => x.row === r);
+  if (!s) return;
+  s.count = Math.max(0, s.count + a);
+  document.getElementById(`c-${r}`).innerText = s.count;
+  if (s.section !== 'team') {
+    document.getElementById(`sub-${r}`).innerText = `$${(s.count * s.price).toFixed(2)}`;
+  }
+  recalcTotal();
+}
+
+function toggleVis(row, val) {
+  const s = curData.stats.find(x => x.row === row);
+  if (s) s.visible = val;
+  render(curData);
+}
+
+function triggerSync() {}
+function renderHistory() {}
