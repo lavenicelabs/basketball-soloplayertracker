@@ -268,21 +268,17 @@ function togglePasswordVisibility() {
 }
 
 function switchToMainContent() {
-  const container = document.getElementById("main-app-container");
+  const container = document.getElementById("main-app-content");
 
+  // Safety Check: If the container isn't found, stop here instead of crashing
   if (!container) {
-    console.error("CRITICAL ERROR: Could not find main-app-container in the DOM.");
-    return; // <--- STOP here, do not proceed to set .style
+    console.error("CRITICAL ERROR: 'main-app-content' not found. Ensure ID matches HTML.");
+    return; 
   }
 
-  // Now we know 'container' is NOT null
+  // Once we are past the 'if' check, we know the container exists
   container.style.display = "block";
   container.style.visibility = "visible";
 
-  console.log("Container found successfully:", container.id);
-  console.log("Container innerHTML length:", container.innerHTML.length);
-  
-  if (container.innerHTML.length === 0) {
-    console.warn("Container is found but is empty!");
-  }
+  console.log("UI Switched to main content.");
 }
