@@ -148,7 +148,7 @@ async function loadInitialApplicationState() {
       .select(`
         visible,
         custom_price,
-        global_metric_templates (id, stat_name, section, is_counter, default_price)
+        global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme)
       `)
       .eq("family_id", currentFamilyId)
       .eq("global_metric_templates.app_type", "basketball:solo"); 
@@ -167,7 +167,8 @@ async function loadInitialApplicationState() {
       return await loadInitialApplicationState();
     }
 
-    configs.sort((a, b) => a.global_metric_templates.id - b.global_metric_templates.id);
+    // Sort configurations dynamically by report order matrix
+    configs.sort((a, b) => a.global_metric_templates.report_sort_order - b.global_metric_templates.report_sort_order);
 
     const formattedStats = configs.map((c) => ({
       name: c.global_metric_templates.stat_name,
@@ -175,7 +176,9 @@ async function loadInitialApplicationState() {
       count: 0,
       visible: c.visible,
       row: c.global_metric_templates.id, 
-      section: c.global_metric_templates.section 
+      section: c.global_metric_templates.section,
+      reportGroup: c.global_metric_templates.report_group,
+      colorTheme: c.global_metric_templates.color_theme
     }));
 
     curData = {
@@ -226,7 +229,7 @@ function render(d) {
   if (settingsContainer) {
     settingsContainer.innerHTML = d.stats.map(s => `
       <div class="toggle-row">
-        <span style="font-weight:bold;">${s.name}</span>
+        <span style="font-weight:bold; color:${s.colorTheme};">${s.name}</span>
         <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
       </div>`).join('');
   }
@@ -248,17 +251,17 @@ function rowHTML(s) {
   const isTeam = s.section === 'team';
   const moneyHTML = isTeam ? '' : `
     <div class="t-money">
-      <div class="t-price" id="price-${s.row}" onclick="editPrice(${s.row},'${s.name.replace(/'/g, "\\'")}',${s.price})">$${s.price.toFixed(2)} ea</div>
+      <div class="t-price" style="color:${s.colorTheme}; font-weight:bold;" id="price-${s.row}" onclick="editPrice(${s.row},'${s.name.replace(/'/g, "\\'")}',${s.price})">$${s.price.toFixed(2)} ea</div>
       <span class="t-sub" id="sub-${s.row}">$${(s.count * s.price).toFixed(2)}</span>
     </div>`;
   return `
-    <div class="t-row">
+    <div class="t-row" style="border-left: 4px solid ${s.colorTheme};">
       <div class="t-controls">
         <button class="btn-c btn-m" onclick="tally(${s.row},-1)">-</button>
         <div class="t-count" id="c-${s.row}">${s.count}</div>
         <button class="btn-c btn-p" onclick="tally(${s.row},1)">+</button>
       </div>
-      <div class="t-stat">${s.name}</div>
+      <div class="t-stat" style="font-weight:500;">${s.name}</div>
       ${moneyHTML}
     </div>`;
 }
@@ -273,7 +276,6 @@ async function loadHistory() {
   }
   
   try {
-    // 1. Fetch the universal history headers directly
     let { data: games, error } = await bballDb
       .from("game_logs") 
       .select(`
@@ -286,7 +288,6 @@ async function loadHistory() {
 
     if (error) throw error;
 
-    // 2. Map structural logs safely into flattened arrays
     histData = (games || []).map(g => {
       const statsMap = {};
       (g.game_stat_values || []).forEach(sv => {
@@ -306,7 +307,7 @@ async function loadHistory() {
         tmin: g.team_minutes,
         money: Number(g.total_payout || 0),
         isDel: g.is_deleted || false,
-        rawStats: statsMap // Holds the key/value metric arrays cleanly for any sport!
+        rawStats: statsMap 
       };
     });
 
@@ -326,6 +327,7 @@ async function loadHistory() {
   }
 }
 
+// RESTORED: Groups layout reporting categories using reportGroup metadata titles
 function renderHistory() {
   const body = document.getElementById('history-body');
   const head = document.getElementById('history-head');
@@ -340,26 +342,62 @@ function renderHistory() {
     return true;
   });
 
-  head.innerHTML = `
-    <tr>
-      <th>Date</th><th>Season</th><th>Opponent</th><th>Loc</th><th>Res</th>
-      <th>Our</th><th>Opp</th><th>MIN</th><th>TMIN</th><th>Payout</th>
-    </tr>`;
+  // Extract unique active visible metric items to dynamically append grouped sub-headers
+  const visibleTemplates = curData.stats.filter(s => s.visible);
+  
+  // Extract distinct logical report categories
+  const reportingGroups = [...new Set(visibleTemplates.map(s => s.reportGroup))];
+
+  // Layer A: Render Primary & Nested Categorized Meta Header Blocks
+  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2">Game Logs</th><th colspan="8">Universal Match Data</th>`;
+  let subRowHTML = `<tr><th>Date</th><th>Season</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
+
+  reportingGroups.forEach(groupName => {
+    const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
+    if (groupStats.length > 0) {
+      topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:#34495e; border-left:2px solid #fff;">${groupName}</th>`;
+      groupStats.forEach(s => {
+        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:3px solid ${s.colorTheme}; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
+      });
+    }
+  });
+
+  topRowHTML += `<th rowspan="2" style="background:#27ae60;">Payout</th></tr>`;
+  subRowHTML += `</tr>`;
+  head.innerHTML = topRowHTML + subRowHTML;
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr><td colspan="40" style="padding:15px;text-align:center;color:#7f8c8d;">No box score logs found.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No box score logs found.</td></tr>`;
     return;
   }
 
-  body.innerHTML = filtered.map(g => `
-    <tr>
-      <td>${g.date}</td><td>${g.season}</td><td>${g.opp}</td><td>${g.loc}</td><td>${g.res}</td>
-      <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td><td>${g.tmin}</td>
-      <td style="font-weight:bold;color:#27ae60;">$${g.money.toFixed(2)}</td>
-    </tr>`).join('');
+  // Layer B: Flatten metrics matching the dynamically built column arrays
+  body.innerHTML = filtered.map(g => {
+    let statsColumnsHTML = '';
+    reportingGroups.forEach(groupName => {
+      const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
+      groupStats.forEach(s => {
+        const value = g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0;
+        statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff;">${value}</td>`;
+      });
+    });
+
+    return `
+      <tr>
+        <td style="font-weight:bold; white-space:nowrap;">${g.date}</td>
+        <td>${g.season}</td>
+        <td style="text-align:left; font-weight:500;">${g.opp}</td>
+        <td><span class="badge ${g.loc === 'H' ? 'badge-home' : 'badge-away'}">${g.loc}</span></td>
+        <td><strong>${g.res}</strong></td>
+        <td>${g.su}</td>
+        <td>${g.st}</td>
+        <td>${g.min}</td>
+        ${statsColumnsHTML}
+        <td style="font-weight:bold;color:#27ae60; background:#f4fbf7;">$${g.money.toFixed(2)}</td>
+      </tr>`;
+  }).join('');
 }
 
-// DYNAMIC SPORT AGNOSTIC WRITER ENTRY NODE
 async function saveGame() {
   const button = document.querySelector('.save-btn');
   if (button) { button.disabled = true; button.innerText = "SAVING..."; }
@@ -368,7 +406,6 @@ async function saveGame() {
     const getI = (id) => document.getElementById(id)?.value || "";
     const totalPayout = curData.stats.reduce((sum, x) => sum + (x.count * x.price), 0);
 
-    // Step A: Build and write universal master log header record
     const logHeader = {
       family_id: currentFamilyId,
       game_date: getI('gameDate'),
@@ -393,10 +430,9 @@ async function saveGame() {
     if (headerError) throw headerError;
     const generatedLogId = savedHeader.id;
 
-    // Step B: Formulate metric template entries dynamically for any sport
     const valuesPayload = curData.stats.map(s => ({
       game_log_id: generatedLogId,
-      template_id: s.row, // link back to template rows dynamically
+      template_id: s.row, 
       stat_value: s.count
     }));
 
@@ -410,7 +446,7 @@ async function saveGame() {
     resetTracker();
     await loadHistory();
   } catch (err) {
-    console.error("Dynamic Write Failure Transaction Aborted:", err);
+    console.error("Data Write Failure Transaction Aborted:", err);
     alert("Failed to save box score: " + err.message);
   } finally {
     if (button) { button.disabled = false; button.innerText = "SAVE"; }
