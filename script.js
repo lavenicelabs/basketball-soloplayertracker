@@ -1,5 +1,4 @@
 // Initialize Supabase Client Connection
-// Ensure your actual Supabase URL and Anon Key are configured correctly below
 const bballDb = supabase.createClient('https://upgfhekhifolcqiudhzy.supabase.co', 'sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U');
 
 let curData = null;
@@ -21,23 +20,98 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// AUTHENTICATION & PORTAL STATE TRACKING
+// AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
   if (isAppInitialized) return; // Prevent loop recursions
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
+      updateStatus("Session active. Fetching profile...", false);
       await fetchUserProfile(session.user.id);
     }
   }
 });
 
+function updateStatus(msg, isError) {
+  const statusEl = document.getElementById('auth-status');
+  if (statusEl) {
+    statusEl.innerText = msg;
+    statusEl.style.color = isError ? '#e74c3c' : '#2980b9';
+  }
+}
+
+// Interactive Password Eye Peak and Icon Shifter
+function togglePasswordVisibility() {
+  const passwordInput = document.getElementById('auth-password');
+  const toggleBtn = document.getElementById('toggle-password-btn');
+  if (!passwordInput || !toggleBtn) return;
+
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    toggleBtn.innerText = '🙈'; // Shift icon to hiding/closed state
+  } else {
+    passwordInput.type = 'password';
+    toggleBtn.innerText = '👁️'; // Shift icon back to open/reveal state
+  }
+}
+
+// Smart Registration Visibility Toggle
+function smartRegister() {
+  const accessKeyInput = document.getElementById('auth-access-key');
+  if (accessKeyInput) {
+    if (accessKeyInput.style.display === 'none' || accessKeyInput.style.display === '') {
+      accessKeyInput.style.display = 'block';
+      updateStatus("Enter email, password, and registration Access Key.", false);
+    } else {
+      handleAuthAction('register');
+    }
+  }
+}
+
+// Master Portal Authentication Engine Action Routing
+async function handleAuthAction(actionType) {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const accessKey = document.getElementById('auth-access-key').value.trim();
+
+  if (!email || !password) {
+    updateStatus("Please enter both Email and Password.", true);
+    return;
+  }
+
+  try {
+    if (actionType === 'login') {
+      updateStatus("Signing in...", false);
+      const { data, error } = await bballDb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } else if (actionType === 'register') {
+      if (!accessKey) {
+        updateStatus("Access Key required for registration verification.", true);
+        return;
+      }
+      updateStatus("Validating access and registering...", false);
+      
+      // Perform SignUp transaction profile mapping
+      const { data, error } = await bballDb.auth.signUp({
+        email,
+        password,
+        options: { data: { registration_key: accessKey } }
+      });
+      if (error) throw error;
+      updateStatus("Registration successful! Check your email for verification.", false);
+    }
+  } catch (err) {
+    console.error("Auth Error Logging Transaction:", err);
+    updateStatus(err.message, true);
+  }
+}
+
 async function fetchUserProfile(userId) {
   console.log("Fetching profile for:", userId);
   try {
     let { data: profile, error } = await bballDb
-      .from('profiles') // Adjust if your profiles table has a variant name
+      .from('profiles') 
       .select('family_id')
       .eq('id', userId)
       .single();
@@ -49,7 +123,7 @@ async function fetchUserProfile(userId) {
     await loadInitialApplicationState();
   } catch (err) {
     console.error("Profile Fetch Warning:", err);
-    await loadInitialApplicationState(); // Fallback to default family tier
+    await loadInitialApplicationState(); // Fallback to default group container state rules
   }
 }
 
@@ -59,7 +133,6 @@ async function fetchUserProfile(userId) {
 async function loadInitialApplicationState() {
   console.log("Loading app state for family:", currentFamilyId);
   try {
-    // 1. Query individual config overrides matching template parameters
     let { data: configs, error } = await bballDb
       .from("user_metric_settings")
       .select(`
@@ -68,33 +141,29 @@ async function loadInitialApplicationState() {
         global_metric_templates (id, stat_name, section, is_counter, default_price)
       `)
       .eq("family_id", currentFamilyId)
-      .eq("global_metric_templates.app_type", "basketball:solo"); // Target new structured slug context
+      .eq("global_metric_templates.app_type", "basketball:solo"); 
 
     if (error) throw error;
 
-    // 2. FALLBACK SEED LOGIC: Invoke database RPC routine directly if configurations are missing
     if (!configs || configs.length === 0) {
       console.log("New account detected. Seeding personal settings from global templates via Database RPC...");
       
       const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
         target_family_id: currentFamilyId,
-        target_app_type: 'basketball:solo' // Exact snippet location context
+        target_app_type: 'basketball:solo'
       });
 
       if (seedError) throw seedError;
-
-      // Re-fetch configuration mappings now that tracking states are seeded
       return await loadInitialApplicationState();
     }
 
-    // 3. Map complex structural joints down into flat data object layers that render layout loops expect
     const formattedStats = configs.map((c) => ({
       name: c.global_metric_templates.stat_name,
       price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
       count: 0,
       visible: c.visible,
-      row: c.global_metric_templates.id, // Primary numerical tracker key 
-      section: c.global_metric_templates.section // Universal layout category assignment
+      row: c.global_metric_templates.id, 
+      section: c.global_metric_templates.section 
     }));
 
     curData = {
@@ -103,18 +172,15 @@ async function loadInitialApplicationState() {
       stats: formattedStats
     };
 
-    // Trigger local layout generators
     render(curData);
 
-    // Swap security overlay display states out
     document.getElementById('auth-overlay').style.display = 'none';
     document.getElementById('main-app-container').style.display = 'block';
     console.log("Application initialization sequence parsed cleanly.");
 
   } catch (err) {
     console.error("CRITICAL CONFIGURATION MAP LOOP FAILURE:", err);
-    const statusEl = document.getElementById('auth-status');
-    if (statusEl) statusEl.innerText = "Error parsing initialization configurations: " + err.message;
+    updateStatus("Error parsing configuration: " + err.message, true);
   }
 }
 
@@ -132,7 +198,6 @@ function render(d) {
   document.getElementById('tMin').value = d.tm || "32";
   if(document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
   
-  // Build season dropdown context options
   const dl = document.getElementById('seasonList');
   if (dl) {
     dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
@@ -141,12 +206,10 @@ function render(d) {
     document.getElementById('season').value = d.seasons[d.seasons.length - 1];
   }
 
-  // SPORT AGNOSTIC CONTEXT RENDERING: Filters by metric sections strings instead of numbers
   document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
 
-  // Dynamically populate options list in settings view panel
   const settingsContainer = document.getElementById('settings-list');
   if (settingsContainer) {
     settingsContainer.innerHTML = d.stats.map(s => `
@@ -266,7 +329,7 @@ function switchTab(t) {
 
 function autoWL(){
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'T' : 'L'));
   triggerSync();
 }
 
