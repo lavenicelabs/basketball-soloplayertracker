@@ -231,7 +231,6 @@ function render(d) {
       </div>`).join('');
   }
   
-  // Attach operational change listeners to form inputs for data warnings updates
   ['scoreUs', 'scoreThem', 'pMin', 'tMin', 'opp', 'season', 'gameDate'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.dataset.listenerAttached) {
@@ -265,7 +264,7 @@ function rowHTML(s) {
 }
 
 // ==========================================
-// APP LOGS HISTORY DATA SYNC & DISPLAY
+// DYNAMIC SPORT-AGNOSTIC DATA LOGS INTERFACE
 // ==========================================
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
@@ -274,47 +273,42 @@ async function loadHistory() {
   }
   
   try {
+    // 1. Fetch the universal history headers directly
     let { data: games, error } = await bballDb
-      .from("app_history") 
-      .select("*")
+      .from("game_logs") 
+      .select(`
+        id, game_date, season, opponent, location, result, score_us, score_them,
+        player_minutes, team_minutes, total_payout, is_deleted,
+        game_stat_values ( template_id, stat_value )
+      `)
       .eq("family_id", currentFamilyId)
       .order("game_date", { ascending: false });
 
     if (error) throw error;
 
-    histData = (games || []).map(g => ({
-      sheetRow: g.id, 
-      date: g.game_date, 
-      season: g.season || "Season 1",
-      opp: g.opponent,
-      loc: g.location === "Home" ? "H" : "A",
-      res: g.result,
-      su: g.score_us,
-      st: g.score_them,
-      min: g.player_minutes,
-      tmin: g.team_minutes,
-      money: Number(g.total_payout || 0),
-      reb: g.rebounds || 0,
-      stl: g.steals || 0,
-      def: g.deflections || 0,
-      jmp: g.jump_balls || 0,
-      blk: g.blocks || 0,
-      cont: g.contested_shots || 0,
-      scrn: g.screens_set || 0,
-      chg: g.charges_drawn || 0,
-      p2m: g.two_pm || 0,
-      p2a: g.two_pa || 0,
-      ftm: g.ft_m || 0,
-      fta: g.ft_a || 0,
-      ptm3: g.three_pm || 0,
-      pta3: g.three_pa || 0,
-      ast: g.assists || 0,
-      to: g.turnovers || 0,
-      tfga: g.team_fga || 0,
-      tfta: g.team_fta || 0,
-      tto: g.team_to || 0,
-      isDel: g.is_deleted || false
-    }));
+    // 2. Map structural logs safely into flattened arrays
+    histData = (games || []).map(g => {
+      const statsMap = {};
+      (g.game_stat_values || []).forEach(sv => {
+        statsMap[sv.template_id] = sv.stat_value;
+      });
+
+      return {
+        sheetRow: g.id, 
+        date: g.game_date, 
+        season: g.season || "Season 1",
+        opp: g.opponent,
+        loc: g.location === "Home" ? "H" : "A",
+        res: g.result,
+        su: g.score_us,
+        st: g.score_them,
+        min: g.player_minutes,
+        tmin: g.team_minutes,
+        money: Number(g.total_payout || 0),
+        isDel: g.is_deleted || false,
+        rawStats: statsMap // Holds the key/value metric arrays cleanly for any sport!
+      };
+    });
 
     const seasons = [...new Set(histData.map(x => x.season))];
     const filterSelect = document.getElementById('seasonFilter');
@@ -332,7 +326,6 @@ async function loadHistory() {
   }
 }
 
-// RESTORED: Generates dynamic tabular markup fields into your active history view panel
 function renderHistory() {
   const body = document.getElementById('history-body');
   const head = document.getElementById('history-head');
@@ -366,18 +359,17 @@ function renderHistory() {
     </tr>`).join('');
 }
 
-// RESTORED: Collects dynamic state objects to push metrics records to public.app_history
+// DYNAMIC SPORT AGNOSTIC WRITER ENTRY NODE
 async function saveGame() {
   const button = document.querySelector('.save-btn');
   if (button) { button.disabled = true; button.innerText = "SAVING..."; }
 
   try {
     const getI = (id) => document.getElementById(id)?.value || "";
-    const getStat = (name) => curData.stats.find(x => x.name.includes(name))?.count || 0;
-
     const totalPayout = curData.stats.reduce((sum, x) => sum + (x.count * x.price), 0);
 
-    const gamePayload = {
+    // Step A: Build and write universal master log header record
+    const logHeader = {
       family_id: currentFamilyId,
       game_date: getI('gameDate'),
       season: getI('season') || "Season 1",
@@ -389,36 +381,36 @@ async function saveGame() {
       player_minutes: parseInt(getI('pMin')) || 0,
       team_minutes: parseInt(getI('tMin')) || 32,
       total_payout: totalPayout,
-      rebounds: getStat('Rebounds'),
-      steals: getStat('Steals'),
-      deflections: getStat('Deflections'),
-      jump_balls: getStat('Jump Balls'),
-      blocks: getStat('Blocks'),
-      contested_shots: getStat('Contested'),
-      screens_set: getStat('Hard Screen'),
-      charges_drawn: getStat('Charges Taken'),
-      two_pm: getStat('2PT Made'),
-      two_pa: getStat('2PT Attempt'),
-      ft_m: getStat('FT Made'),
-      ft_a: getStat('FT Attempt'),
-      three_pm: getStat('3PT Made'),
-      three_pa: getStat('3PT Attempt'),
-      assists: getStat('Assists'),
-      turnovers: getStat('Turnovers'),
-      team_fga: getStat('Team FGA'),
-      team_fta: getStat('Team FTA'),
-      team_to: getStat('Team TO'),
       is_deleted: false
     };
 
-    const { error } = await bballDb.from('app_history').insert([gamePayload]);
-    if (error) throw error;
+    const { data: savedHeader, error: headerError } = await bballDb
+      .from('game_logs')
+      .insert([logHeader])
+      .select('id')
+      .single();
+
+    if (headerError) throw headerError;
+    const generatedLogId = savedHeader.id;
+
+    // Step B: Formulate metric template entries dynamically for any sport
+    const valuesPayload = curData.stats.map(s => ({
+      game_log_id: generatedLogId,
+      template_id: s.row, // link back to template rows dynamically
+      stat_value: s.count
+    }));
+
+    const { error: valuesError } = await bballDb
+      .from('game_stat_values')
+      .insert(valuesPayload);
+
+    if (valuesError) throw valuesError;
 
     alert("Box score logged successfully!");
     resetTracker();
     await loadHistory();
   } catch (err) {
-    console.error("Data Write Failure:", err);
+    console.error("Dynamic Write Failure Transaction Aborted:", err);
     alert("Failed to save box score: " + err.message);
   } finally {
     if (button) { button.disabled = false; button.innerText = "SAVE"; }
