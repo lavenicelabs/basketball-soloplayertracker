@@ -300,18 +300,19 @@ function togglePasswordVisibility() {
   if (pf) pf.type = pf.type === "password" ? "text" : "password";
 }
 
-function switchToMainContent() {
-  const container = document.getElementById("main-app-container"); // Match your HTML ID
-
-  // Safety Check
-  if (!container) {
-    console.error("CRITICAL ERROR: 'main-app-container' not found in HTML.");
-    return; 
-  }
-
-  // Force the element to show
-  container.style.display = "block";
-  container.style.visibility = "visible";
-
-  console.log("UI Switched to main content.");
+function switchTab(tabId) {
+    // Hide all pages
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(p => p.style.display = 'none');
+    
+    // Show the selected page
+    const target = document.getElementById('page-' + tabId);
+    if (target) {
+        target.style.display = 'block';
+    }
+    
+    // Update button styling
+    const btns = document.querySelectorAll('.nav-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
 }

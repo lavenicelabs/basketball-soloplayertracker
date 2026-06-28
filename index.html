@@ -63,7 +63,147 @@
       <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
     </div>
 
-  </div>
-</body>
+    <div id="page-tracker" class="page active">
+      <div class="header">
+        <div class="input-row">
+          <input list="seasonList" id="season" placeholder="Season">
+          <datalist id="seasonList"></datalist>
+          <input type="date" id="gameDate">
+        </div>
+        <div class="input-row">
+          <input type="text" id="opp" placeholder="Opponent">
+          <input type="number" id="scoreUs" placeholder="Our" style="flex:0.5;" oninput="autoWL()">
+          <span style="font-weight:bold;color:#7f8c8d;">-</span>
+          <input type="number" id="scoreThem" placeholder="Opp" style="flex:0.5;" oninput="autoWL()">
+        </div>
+        <div class="input-row">
+          <input type="number" id="pMin" placeholder="Player MIN" oninput="checkStats(); triggerSync();">
+          <input type="number" id="tMin" value="32" placeholder="Team MIN" oninput="checkStats(); triggerSync();">
+        </div>
+        <div class="input-row">
+          <div class="toggle-group">
+            <button id="btnHome" class="seg-btn active" onclick="setLoc(true)">HOME</button>
+            <button id="btnAway" class="seg-btn" onclick="setLoc(false)">AWAY</button>
+          </div>
+          <div class="toggle-group">
+            <button id="btnWin" class="seg-btn active" onclick="setWL('W')">WIN</button>
+            <button id="btnTie" class="seg-btn" onclick="setWL('T')">TIE</button>
+            <button id="btnLoss" class="seg-btn" onclick="setWL('L')">LOSS</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="tracker-boards-container">
+        <div id="wrap-def">
+          <div class="section-title">🛡️ Defense</div>
+          <div class="tracker-list list-def" id="board-def"></div>
+        </div>
+        <div id="wrap-off">
+          <div class="section-title">⚔️ Offense</div>
+          <div class="tracker-list list-off" id="board-off"></div>
+        </div>
+        <div id="wrap-team">
+          <div class="section-title">👥 Team Stats</div>
+          <div class="tracker-list list-team" id="board-team"></div>
+        </div>
+      </div>
+      
+      <div id="achievements-container"></div>
+      <div id="warnings-container"></div>
 
+      <div class="footer">
+        <div><span style="font-size:.8rem;font-weight:bold">TOTAL:</span><span class="total-val" id="totalVal">$0.00</span></div>
+        <div style="display:flex;gap:8px">
+          <button class="reset-btn" onclick="resetTracker()">RESET</button>
+          <button class="save-btn" onclick="saveGame()">SAVE</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-history" class="page">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <h3 style="margin:0;font-size:1rem">Game Logs</h3>
+        <div style="display:flex;gap:12px;align-items:center">
+          <label style="font-size:.75rem;font-weight:bold;color:#e74c3c">
+            <input type="checkbox" id="showDel" onchange="renderHistory()"> Trash
+          </label>
+          <select id="seasonFilter" onchange="renderHistory()"></select>
+        </div>
+      </div>
+      <div class="history-container">
+        <table>
+          <thead id="history-head"></thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="page-settings" class="page">
+      <div class="header">
+        <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Set the standard game length for your league.</p>
+        <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+      </div>
+
+      <div class="header">
+        <h3 style="margin:0 0 10px 0;">Tracker Layout</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.</p>
+        <select id="layoutOrder" onchange="updateLayoutOrder()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+          <option value="def,off,team">Defense ➔ Offense ➔ Team</option>
+          <option value="off,def,team">Offense ➔ Defense ➔ Team</option>
+          <option value="team,off,def">Team ➔ Offense ➔ Defense</option>
+          <option value="team,def,off">Team ➔ Defense ➔ Offense</option>
+        </select>
+      </div>
+
+      <div class="header">
+        <h3 style="margin:0 0 10px 0;">Visible Stats</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History tabs.</p>
+        <div id="settings-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <div id="page-help" class="page">
+      <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
+        <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
+        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
+        <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
+        </div>
+      </div>
+
+      <div class="individual-disclaimer">
+        <strong>ℹ️ Individual Player Tracker</strong><br>
+        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
+      </div>
+
+      <div class="header">
+        <h3 style="margin:0 0 5px 0;">App Documentation</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
+        <div id="documentation-container" style="font-size: 0.8rem; line-height: 1.5; text-align: left; margin-top: 10px; color:#34495e;">
+          <p><strong>Advanced Calculations Reference:</strong></p>
+          <ul>
+            <li><strong>Usage Rate (USG%):</strong> Measures the percentage of team plays concluded by the player while on the court. Formulated using field goal attempts, free throw attempts, and turnovers against total team counts[cite: 247].</li>
+            <li><strong>Effective Field Goal Percentage (eFG%):</strong> Adjusts normal field goal percentages to account for the fact that 3-point field goals are worth more than 2-point field goals. Built cleanly as: <code>(2PT Made + 1.5 * 3PT Made) / (Total Field Goal Attempts)</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="margin-top:0;">Edit Game Record</h3>
+        <div id="edit-warnings-container" style="color: #c0392b; font-size: 0.8rem; font-weight: bold; background: #fadbd8; padding: 8px; border-radius: 6px; margin-bottom: 10px; display: none;"></div>
+        <div class="edit-grid" id="modal-fields-container"></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+          <button class="reset-btn" style="padding: 8px 14px;" onclick="closeEditModal()">Cancel</button>
+          <button class="save-btn" style="padding: 8px 14px;" onclick="commitGameEdit()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
 </html>
