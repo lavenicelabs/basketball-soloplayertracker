@@ -1,0 +1,109 @@
+/* ==========================================================================
+   🏀 LAVENICE LABS SPORTS SUITE - MASTER PRODUCTION STYLESHEET
+   ========================================================================== */
+body { 
+  font-family: 'Segoe UI', Roboto, sans-serif; 
+  background: #f9f7f5; 
+  margin: 0; 
+  padding: 0; 
+  color: #2c3e50; 
+}
+
+/* Sleek Branding Header */
+.app-brand-header {
+  background: #2c3e50;
+  color: #ffffff;
+  padding: 12px 14px 6px 14px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 110;
+}
+.app-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.app-subtitle {
+  font-size: 0.7rem;
+  color: #bdc3c7;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.nav { display: flex; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 57px; z-index: 100; }
+.nav-btn { flex: 1; padding: 12px 4px; background: none; border: none; color: #95a5a6; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 3px solid transparent; }
+.nav-btn.active { color: #2980b9; border-bottom: 3px solid #2980b9; }
+.page { display: none; padding: 8px; margin: 0 auto; max-width: 1600px; }
+.active { display: block; }
+#page-tracker { max-width: 800px; }
+.header { background: #fff; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.input-row { display: flex; gap: 8px; width: 100%; }
+input, select { flex: 1; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; background: #fdfdfd; min-width: 0; }
+.toggle-group { display: flex; flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+.seg-btn { flex: 1; padding: 8px; border: none; background: #f8f9fa; cursor: pointer; font-size: 0.75rem; font-weight: 800; color: #7f8c8d; }
+.seg-btn.active { background: #2c3e50; color: white; }
+.section-title { font-size: 0.85rem; font-weight: 800; color: #7f8c8d; margin: 12px 0 6px 4px; text-transform: uppercase; }
+.tracker-list { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px; border-left: 4px solid #ccc; }
+
+/* Dynamic Theme Left-Border Indicators */
+.list-def { border-left-color: #3498db; }
+.list-off { border-left-color: #e67e22; }
+.list-team { border-left-color: #9b59b6; }
+
+.t-row { display: flex; align-items: center; border-bottom: 1px solid #f0f0f0; padding: 8px 12px; }
+.t-controls { display: flex; align-items: center; gap: 6px; width: 110px; }
+.btn-c { width: 32px; height: 32px; border: none; border-radius: 50%; font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; }
+.btn-m { background: #f1f2f6; color: #747d8c; }
+.btn-p { background: #eccc68; color: #2f3542; }
+.t-count { font-size: 1.3rem; font-weight: 800; width: 28px; text-align: center; }
+.t-stat { flex: 1; font-weight: 700; font-size: 0.85rem; color: #34495e; }
+.t-money { text-align: right; }
+.t-price { font-size: 0.7rem; color: #2980b9; margin-bottom: 2px; cursor: pointer; text-decoration: underline; }
+.t-sub { font-weight: 800; color: #27ae60; font-size: 0.95rem; }
+.footer { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: #fff; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; }
+.total-val { color: #2ecc71; font-size: 1.3rem; font-weight: 800; margin-left: 6px; }
+.save-btn { background: #27ae60; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+.save-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+.reset-btn { background: #e74c3c; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+.reset-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+.history-container { overflow-x: auto; overflow-y: auto; max-height: 70vh; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+th, td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+th { font-weight: 800; background: #f8f9fa; border-bottom: 2px solid #bdc3c7; position: sticky; top: 0; z-index: 10; }
+.sticky-1 { position: sticky; left: 0; background: #fff; z-index: 5; border-right: 1px solid #eee; }
+.sticky-2 { position: sticky; left: 40px; background: #fff; z-index: 5; border-right: 1px solid #eee; }
+.sticky-3 { position: sticky; left: 120px; background: #fff; z-index: 5; font-weight: bold; border-right: 1px solid #eee; }
+th.sticky-1, th.sticky-2, th.sticky-3 { background: #f8f9fa; z-index: 15; }
+.bg-money { background-color: #FFF0F5; } .bg-def { background-color: #DCEEFF; } .bg-off { background-color: #FFE5CC; } .bg-pts { background-color: #FFFACD; } .bg-adv { background-color: #F4ECF7; }
+.sum-row { font-weight: 800; background: #f8f9fa; } .avg-row { font-weight: 800; background: #fdfdfd; color: #7f8c8d; }
+.badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; }
+.badge-w { background: #27ae60; } .badge-l { background: #e74c3c; } .badge-t { background: #95a5a6; } .badge-h { background: #2980b9; } .badge-a { background: #f39c12; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+.modal-content { background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+.edit-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 10px; }
+.edit-grid label { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; display: block; margin-bottom: 2px; }
+.edit-grid input, .edit-grid select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.tooltip-cell { cursor: help; text-decoration: underline dotted; }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin-bottom: 5px; }
+#achievements-container { color: #d35400; font-size: 1.1rem; font-weight: 900; text-align: center; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); display: none; }
+#warnings-container { color: #c0392b; font-size: 0.85rem; font-weight: bold; margin: 0 0 12px 0; background: #fadbd8; padding: 10px; border-radius: 8px; display: none; line-height: 1.4; border-left: 4px solid #e74c3c; }
+.help-card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 15px; font-size: 0.9rem; line-height: 1.5; }
+.help-card strong { color: #2980b9; }
+.help-card ul { margin: 8px 0 0 0; padding-left: 20px; }
+.help-card li { margin-bottom: 6px; }
+.individual-disclaimer { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; color: #2471a3; }
+.brand-logo-container { text-align: center; margin: 10px 0 15px 0; }
+.brand-logo-container img { max-width: 100%; height: auto; border-radius: 8px; }
+.support-card { background: #ebf5fb; border: 1.5px solid #2980b9; text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.support-btn { display: inline-block; background: #008cff; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,140,255,0.3); transition: background 0.2s; }
+.support-btn:hover { background: #0077db; }
+.contact-btn { display: inline-block; background: #2c3e50; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: background 0.2s; }
+.contact-btn:hover { background: #1a252f; }

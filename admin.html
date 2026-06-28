@@ -1,0 +1,102 @@
+	<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LaVenice Labs | Admin</title>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Bootstrap for clean UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .card { width: 400px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<!-- Login Section -->
+<div class="card" id="login-section">
+    <h3 class="text-center">Admin Login</h3>
+    <input type="email" id="email" class="form-control my-2" placeholder="Admin Email">
+    <div class="input-group my-2">
+        <input type="password" id="pass" class="form-control" placeholder="Password">
+        <button class="btn btn-outline-secondary" type="button" onclick="togglePass()">👁️</button>
+    </div>
+    <button class="btn btn-primary w-100" onclick="login()">Login</button>
+    <div id="msg" class="mt-3 text-danger"></div>
+</div>
+
+<!-- Admin Section (Hidden by default) -->
+<div class="card" id="admin-section" style="display:none;">
+    <h3>Admin Dashboard</h3>
+    <button class="btn btn-success w-100 my-2" onclick="generateKeys()">Generate 50 Keys</button>
+    
+    <!-- Custom Coupon Input -->
+    <div class="mt-4">
+        <input type="text" id="customKey" class="form-control" placeholder="Enter custom coupon code">
+        <button class="btn btn-warning w-100 mt-2" onclick="createCustomKey()">Create Coupon</button>
+    </div>
+
+    <div id="status" class="alert mt-2"></div>
+    <button class="btn btn-link w-100" onclick="logout()">Logout</button>
+</div>
+
+<script>
+    // Initialize Supabase with unique variable name
+	const sbClient = supabase.createClient('https://upgfhekhifolcqiudhzy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwZ2ZoZWtoaWZvbGNxaXVkaHp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTc4ODksImV4cCI6MjA5Nzk5Mzg4OX0.OIU2FU4ThR41pTK571BpL0wJS6zBqtI0B0Pth851le4');
+
+    function togglePass() {
+        const x = document.getElementById("pass");
+        x.type = (x.type === "password") ? "text" : "password";
+    }
+
+    async function login() {
+        const { error } = await sbClient.auth.signInWithPassword({ 
+            email: document.getElementById('email').value, 
+            password: document.getElementById('pass').value 
+        });
+        error ? document.getElementById('msg').innerText = error.message : location.reload();
+    }
+
+    async function generateKeys() {
+        const keys = Array.from({length: 50}, () => ({ 
+            key: Math.random().toString(36).substring(2, 14).toUpperCase() 
+        }));
+        
+        const { error } = await sbClient.from('access_keys').insert(keys);
+        updateStatus(error, "50 Keys Generated!");
+    }
+
+    async function createCustomKey() {
+        const keyVal = document.getElementById('customKey').value;
+        if (!keyVal) { alert("Please enter a key!"); return; }
+        
+        const { error } = await sbClient.from('access_keys').insert([
+            { key: keyVal, is_manual_override: true }
+        ]);
+        
+        updateStatus(error, "Coupon created: " + keyVal);
+    }
+
+    function updateStatus(error, successMsg) {
+        const s = document.getElementById('status');
+        s.className = error ? "alert alert-danger" : "alert alert-success";
+        s.innerText = error ? "Error: " + error.message : successMsg;
+    }
+
+    async function logout() {
+        await sbClient.auth.signOut();
+        location.reload();
+    }
+
+    // Check session on load
+    sbClient.auth.getSession().then(({ data }) => {
+        if (data.session) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('admin-section').style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>
