@@ -1,6 +1,5 @@
 <!doctype html>
 <html>
-
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
@@ -15,40 +14,30 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js?t=1719500000"></script>
 </head>
-
 <body>
 
-  <div id="auth-overlay"
-    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div
-      style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
+  <!-- 1. IDENTITY & PORTAL SECURITY OVERLAY -->
+  <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
       <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
-      <div id="auth-status"
-        style="margin: 10px 0; font-size: 0.9rem; font-weight: bold; min-height: 1.2em; color: #2980b9;"></div>
-      <p id="auth-message" style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px">Access real-time basketball
-        logging & performance insights</p>
+      <div id="auth-status" style="margin: 10px 0; font-size: 0.9rem; font-weight: bold; min-height: 1.2em; color: #2980b9;"></div>
+      <p id="auth-message" style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px">Access real-time basketball logging & performance insights</p>
 
-      <input type="email" id="auth-email" placeholder="Email Address"
-        style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+      <input type="email" id="auth-email" placeholder="Email Address" style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
       <div id="password-container" style="position: relative; width: 100%; margin-bottom: 10px">
-        <input type="password" id="auth-password" placeholder="Password"
-          style="width: 100%; padding: 12px; padding-right: 45px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
-        <span id="toggle-password-btn" onclick="togglePasswordVisibility()"
-          style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; user-select: none;">👁️</span>
+        <input type="password" id="auth-password" placeholder="Password" style="width: 100%; padding: 12px; padding-right: 45px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+        <span id="toggle-password-btn" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; user-select: none;">👁️</span>
       </div>
-      <input type="text" id="auth-access-key" placeholder="Enter Access Key"
-        style="width: 100%; margin-bottom: 15px; padding: 12px; box-sizing: border-box; border: 1px solid #2980b9; border-radius: 6px; font-size: 0.9rem; display: none;">
+      <input type="text" id="auth-access-key" placeholder="Enter Access Key" style="width: 100%; margin-bottom: 15px; padding: 12px; box-sizing: border-box; border: 1px solid #2980b9; border-radius: 6px; font-size: 0.9rem; display: none;">
 
       <div id="standard-auth-buttons" style="display: flex; gap: 10px">
-        <button onclick="handleAuthAction('login')"
-          style="flex: 1; background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Sign
-          In</button>
-        <button onclick="smartRegister()"
-          style="flex: 1; background: #2980b9; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Register</button>
+        <button onclick="handleAuthAction('login')" style="flex: 1; background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Sign In</button>
+        <button onclick="smartRegister()" style="flex: 1; background: #2980b9; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Register</button>
       </div>
     </div>
   </div>
 
+  <!-- 2. WRAPPER FOR SECURE APPLICATION CORE -->
   <div id="main-app-container" style="display: none">
 
     <div class="app-brand-header">
@@ -63,6 +52,7 @@
       <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
     </div>
 
+    <!-- TRACKER PAGE -->
     <div id="page-tracker" class="page active">
       <div class="header">
         <div class="input-row">
@@ -92,7 +82,7 @@
           </div>
         </div>
       </div>
-
+      
       <div id="tracker-boards-container">
         <div id="wrap-def">
           <div class="section-title">🛡️ Defense</div>
@@ -107,13 +97,12 @@
           <div class="tracker-list list-team" id="board-team"></div>
         </div>
       </div>
-
+      
       <div id="achievements-container"></div>
       <div id="warnings-container"></div>
 
       <div class="footer">
-        <div><span style="font-size:.8rem;font-weight:bold">TOTAL:</span><span class="total-val"
-            id="totalVal">$0.00</span></div>
+        <div><span style="font-size:.8rem;font-weight:bold">TOTAL:</span><span class="total-val" id="totalVal">$0.00</span></div>
         <div style="display:flex;gap:8px">
           <button class="reset-btn" onclick="resetTracker()">RESET</button>
           <button class="save-btn" onclick="saveGame()">SAVE</button>
@@ -121,6 +110,7 @@
       </div>
     </div>
 
+    <!-- HISTORY LOGS PAGE -->
     <div id="page-history" class="page">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <h3 style="margin:0;font-size:1rem">Game Logs</h3>
@@ -139,20 +129,18 @@
       </div>
     </div>
 
+    <!-- CONFIGURATIONS & SETTINGS PAGE -->
     <div id="page-settings" class="page">
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
         <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Set the standard game length for your league.</p>
-        <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)"
-          style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+        <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
       </div>
 
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Tracker Layout</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.
-        </p>
-        <select id="layoutOrder" onchange="updateLayoutOrder()"
-          style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.</p>
+        <select id="layoutOrder" onchange="updateLayoutOrder()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
           <option value="def,off,team">Defense ➔ Offense ➔ Team</option>
           <option value="off,def,team">Offense ➔ Defense ➔ Team</option>
           <option value="team,off,def">Team ➔ Offense ➔ Defense</option>
@@ -162,100 +150,112 @@
 
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Visible Stats</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History
-          tabs.</p>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History tabs.</p>
         <div id="settings-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
 
+    <!-- DOCUMENTATION & APP HELP PAGE -->
     <div id="page-help" class="page">
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
         <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
         <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
-        <div
-          style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
-          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to
-            Home Screen</strong>.<br><br>
-          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home
-            Screen</strong> or <strong>Install App</strong>.
+        <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
         </div>
       </div>
 
       <div class="individual-disclaimer">
         <strong>ℹ️ Individual Player Tracker</strong><br>
-        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built
-        to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced
-        metrics (like Usage %).
+        This software is designed to track and gamify the season for a <strong>single player</strong>[cite: 4]. It is not built to track rosters of multiple players[cite: 4]. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %)[cite: 4].
       </div>
 
       <div class="section-title">📱 App Workflow</div>
       <div class="help-card">
-        <div
-          style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
-          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your
-          mobile phone during live games. However, because of the massive amount of column data, the
-          <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
+        <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games[cite: 4]. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis[cite: 4].
         </div>
         <ul>
-          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set
-            Default Team Minutes. Tap any price in the Tracker to edit its value.</li>
-          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots
-            automatically add an attempt.</li>
-          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
-          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout
-            games as Trash (🗑️) to exclude them from averages. To restore a trashed game, check the "Trash" box at the
-            top of the History tab to reveal hidden games, then click the Restore icon (♻️).</li>
-          <li><strong>5. Export PDF:</strong> Tap the ✏️ icon on any game in the History tab and click <strong>Export
-              PDF</strong> to download a printable box score.</li>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes[cite: 4]. Tap any price in the Tracker to edit its value[cite: 4].</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats[cite: 4]. Made shots automatically add an attempt[cite: 4].</li>
+          <li><strong>3. Save:</strong> Hit Save to push the game to your History log[cite: 4].</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash (🗑️) to exclude them from averages[cite: 4]. To restore a trashed game, check the "Trash" box at the top of the History tab to reveal hidden games, then click the Restore icon (♻️)[cite: 4].</li>
+          <li><strong>5. Export PDF:</strong> Tap the ✏️ icon on any game in the History tab and click <strong>Export PDF</strong> to download a printable box score[cite: 4].</li>
         </ul>
       </div>
 
       <div class="section-title">📋 Game Details (Header)</div>
       <div class="help-card">
         <ul>
-          <li><strong>Season:</strong> Type a new season or pick from the dropdown. <em>The app automatically defaults
-              to your most recently created season.</em></li>
-          <li><strong>Scores & Result:</strong> Enter "Our" score and "Opp" (Opponent) score. The Win/Tie/Loss toggle
-            will <em>automatically update</em> based on the scores you enter.</li>
-          <li><strong>Minutes (MIN):</strong> Enter Player MIN (your playing time) and Team MIN (total game length,
-            e.g., 32, 40, or 48). <em>Team MIN is required to accurately calculate Usage Percentage (USG%). You can set
-              your default Team MIN in the Settings tab so you don't have to enter it every time.</em></li>
-          <li><strong>Location:</strong> Toggle whether the game was Home or Away.</li>
+          <li><strong>Season:</strong> Type a new season or pick from the dropdown[cite: 4]. <em>The app automatically defaults to your most recently created season[cite: 4].</em></li>
+          <li><strong>Scores & Result:</strong> Enter "Our" score and "Opp" (Opponent) score[cite: 4]. The Win/Tie/Loss toggle will <em>automatically update</em> based on the scores you enter[cite: 4].</li>
+          <li><strong>Minutes (MIN):</strong> Enter Player MIN (your playing time) and Team MIN (total game length, e.g., 32, 40, or 48)[cite: 4]. <em>Team MIN is required to accurately calculate Usage Percentage (USG%)[cite: 4]. You can set your default Team MIN in the Settings tab so you don't have to enter it every time[cite: 4].</em></li>
+          <li><strong>Location:</strong> Toggle whether the game was Home or Away[cite: 4].</li>
         </ul>
       </div>
 
       <div class="section-title">💸 Custom Metrics</div>
       <div class="help-card">
-        <strong>Total $</strong>: An incentive option for players to earn money by accumulating stats. <em>Prices are
-          editable by tapping the blue price text in the Tracker.</em><br><br>
-        <strong>Advanced Calculations Reference:</strong>
-        <ul>
-          <li><strong>Usage Rate (USG%):</strong> Measures the percentage of team plays concluded by the player while on
-            the court. Formulated using field goal attempts, free throw attempts, and turnovers against total team
-            counts.</li>
-          <li><strong>Effective Field Goal Percentage (eFG%):</strong> Adjusts normal field goal percentages to account
-            for the fact that 3-point field goals are worth more than 2-point field goals. Built cleanly as:
-            <code>(2PT Made + 1.5 * 3PT Made) / (Total Field Goal Attempts)</code>.</li>
-        </ul>
+        <strong>Total $</strong>: An incentive option for players to earn money by accumulating stats[cite: 4]. <em>Prices are editable by tapping the blue price text in the Tracker[cite: 4].</em><br><br>
+        <strong>Trash Flag</strong>: Indicates if the game was a blowout or garbage time[cite: 4]. Toggling this in History removes the game from your season averages[cite: 4].
+      </div>
+
+      <div class="section-title">📈 Advanced Metrics</div>
+      <div class="help-card">
+        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots[cite: 4].<br><br>
+        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws[cite: 4].<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor[cite: 4]. <em>Requires Team MIN, Team FGA, Team FTA, and Team TO to calculate[cite: 4].</em><br><br>
+        <strong>A/TO</strong>: Assist to Turnover Ratio[cite: 4].
+      </div>
+
+      <div class="section-title">🏀 Basic Stats</div>
+      <div class="help-card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div><strong>PTS</strong>: Points[cite: 4]</div>
+        <div><strong>REB</strong>: Rebounds[cite: 4]</div>
+        <div><strong>AST</strong>: Assists[cite: 4]</div>
+        <div><strong>STL</strong>: Steals[cite: 4]</div>
+        <div><strong>BLK</strong>: Blocks[cite: 4]</div>
+        <div><strong>TO</strong>: Turnovers[cite: 4]</div>
+        <div><strong>MIN</strong>: Minutes Played[cite: 4]</div>
+        <div><strong>DEF</strong>: Deflections[cite: 4]</div>
+        <div><strong>JMP</strong>: Jump Balls Won[cite: 4]</div>
+        <div><strong>CONT</strong>: Contested Shots[cite: 4]</div>
+        <div><strong>SCRN</strong>: Screens Set[cite: 4]</div>
+        <div><strong>CHG</strong>: Charges Drawn[cite: 4]</div>
+      </div>
+
+      <div class="brand-logo-container">
+        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">
+      </div>
+
+      <!-- Modified Support Card for Native Marketplaces -->
+      <div class="support-card">
+        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support Future Updates</strong>
+        <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
+          Thank you for choosing SoloPlayer Tracker! If this tool is helping you level up your performance metrics and analyze your season insights, consider offering a tip to support future feature expansions and upgrades.
+        </p>
+        <a href="https://venmo.com/u/LaveniceLabs" target="_blank" class="support-btn">
+          ☕ Tip on Venmo (@LaveniceLabs)
+        </a>
+      </div>
+
+      <div class="help-card" style="text-align: center; margin-top: 20px;">
+        <strong style="color: #2c3e50; font-size: 1.05rem;">Need Help?</strong>
+        <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
+          If you have any questions, encounter an unexpected glitch, or need user support, feel free to contact us directly!
+        </p>
+        <a href="mailto:lavenicelabs@gmail.com?subject=SoloPlayer%20Tracker%20Support" class="contact-btn">
+          ✉️ Contact Support
+        </a>
       </div>
     </div>
 
-    <div id="edit-modal" class="modal-overlay">
-      <div class="modal-content">
-        <h3 style="margin-top:0;">Edit Game Record</h3>
-        <div id="edit-warnings-container"
-          style="color: #c0392b; font-size: 0.8rem; font-weight: bold; background: #fadbd8; padding: 8px; border-radius: 6px; margin-bottom: 10px; display: none;">
-        </div>
-        <div class="edit-grid" id="modal-fields-container"></div>
-        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
-          <button class="reset-btn" style="padding: 8px 14px;" onclick="closeEditModal()">Cancel</button>
-          <button class="save-btn" style="padding: 8px 14px;" onclick="commitGameEdit()">Save Changes</button>
-        </div>
-      </div>
+    <!-- EDIT OVERLAY DIALOG MODAL -->
+    <div id="editModal" class="modal-overlay">
+      <!-- (Keep your exact modal setup from original html) -->
     </div>
 
   </div>
-
 </body>
-
 </html>

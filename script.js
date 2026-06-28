@@ -300,46 +300,81 @@ function togglePasswordVisibility() {
   if (pf) pf.type = pf.type === "password" ? "text" : "password";
 }
 
-function switchTab(tabId) {
-  // Hide all pages
-  const pages = document.querySelectorAll('.page');
-  pages.forEach(p => p.style.display = 'none');
-
-  // Show the selected page
-  const target = document.getElementById('page-' + tabId);
-  if (target) {
-    target.style.display = 'block';
-  }
-s
-  // Update button styling
-  const btns = document.querySelectorAll('.nav-btn');
-  btns.forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
+// ==========================================
+// CORE VIEW CONTROLLER ENGINE
+// ==========================================
+function switchTab(t) {
+  // Correctly hide all page containers safely
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  const targetPage = document.getElementById('page-' + t);
+  const targetTab = document.getElementById('tab-' + t);
+  
+  if (targetPage) targetPage.style.display = 'block';
+  if (targetTab) targetTab.classList.add('active');
+  
+  if (t === 'history' && histData.length === 0) loadHistory();
+  if (t === 'history' && histData.length > 0) renderHistory();
 }
 
+// ==========================================
+// DYNAMIC APP CONFIGURATION HANDLING
+// ==========================================
 async function loadInitialApplicationState() {
   console.log("Loading app state for family:", currentFamilyId);
+  try {
+    // 1. Query individual config mapping matching template parameters
+    let { data: configs, error } = await bballDb
+      .from("user_metric_settings")
+      .select(`
+        visible,
+        custom_price,
+        global_metric_templates (id, stat_name, section, is_counter, default_price)
+      `)
+      .eq("family_id", currentFamilyId);
 
-  // 1. Fetch user specific settings
-  let { data: userSettings, error } = await bballDb
-    .from("user_metric_settings")
-    .select(`
-      visible,
-      custom_price,
-      global_metric_templates (stat_name, section, is_counter)
-    `)
-    .eq("family_id", currentFamilyId)
-    .eq("global_metric_templates.app_type", "basketball"); // Simply toggle to 'baseball' for your next project!
+    if (error) throw error;
 
-  // 2. FALLBACK SEED ENGINE: If user has no preferences yet, clone the defaults
-  if (!userSettings || userSettings.length === 0) {
-    console.log("New account detected. Seeding personal settings from global templates...");
-    await seedUserDefaultSettings(currentFamilyId, "basketball");
+    // 2. FALLBACK SEED ENGINE: Invoke your database RPC routine directly if configuration rows are missing
+    if (!configs || configs.length === 0) {
+      console.log("New account detected. Seeding personal settings from global templates via Database RPC...");
+      
+      const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
+        target_family_id: currentFamilyId,
+        target_app_type: 'basketball'
+      });
 
-    // Re-fetch now that data is populated
-    return loadInitialApplicationState();
+      if (seedError) throw seedError;
+
+      // Re-fetch clean states now that tracking is populated
+      return await loadInitialApplicationState();
+    }
+
+    // 3. Map complex structural joins down into flat data object rules that your legacy render() expects
+    const formattedStats = configs.map((c, index) => ({
+      name: c.global_metric_templates.stat_name,
+      price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
+      count: 0,
+      visible: c.visible,
+      row: c.global_metric_templates.id
+    }));
+
+    curData = {
+      opp: "", su: "", st: "", loc: true, res: "W", pm: "", tm: 32,
+      seasons: ["Season 1"], // Fallback placeholder logic
+      stats: formattedStats
+    };
+
+    // Trigger local layout generators safely
+    render(curData);
+
+    setDisplay('auth-overlay', 'none');
+    setDisplay('main-app-container', 'block');
+    console.log("UI Switched to main content safely.");
+
+  } catch (err) {
+    console.error("CRITICAL UI ERROR:", err);
+    updateStatus("Error loading user configurations: " + err.message, true);
   }
-
-  // 3. Render dynamically based on what the DB returned
-  renderDynamicTrackerBoards(userSettings);
 }
