@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auto-click Sign-In button when pressing Enter on password/email inputs
   const passwordInput = document.getElementById('auth-password');
   const emailInput = document.getElementById('auth-email');
-
+  
   const handleEnterKey = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isAppInitialized) return;
+  if (isAppInitialized) return; 
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
@@ -62,10 +62,10 @@ function togglePasswordVisibility() {
 
   if (passwordInput.type === 'password') {
     passwordInput.type = 'text';
-    toggleBtn.innerText = '🙈';
+    toggleBtn.innerText = '🙈'; 
   } else {
     passwordInput.type = 'password';
-    toggleBtn.innerText = '👁️';
+    toggleBtn.innerText = '👁️'; 
   }
 }
 
@@ -102,7 +102,7 @@ async function handleAuthAction(actionType) {
         return;
       }
       updateStatus("Validating access and registering...", false);
-
+      
       const { data, error } = await bballDb.auth.signUp({
         email,
         password,
@@ -121,9 +121,9 @@ async function fetchUserProfile(userId) {
   console.log("Fetching profile for user ID:", userId);
   try {
     let { data: profile, error } = await bballDb
-      .from('profiles')
+      .from('profiles') 
       .select('family_id')
-      .eq('user_id', userId)
+      .eq('user_id', userId) 
       .maybeSingle();
 
     if (!error && profile) {
@@ -133,7 +133,7 @@ async function fetchUserProfile(userId) {
     await loadInitialApplicationState();
   } catch (err) {
     console.error("Profile Fetch Warning:", err);
-    await loadInitialApplicationState();
+    await loadInitialApplicationState(); 
   }
 }
 
@@ -151,13 +151,13 @@ async function loadInitialApplicationState() {
         global_metric_templates (id, stat_name, section, is_counter, default_price)
       `)
       .eq("family_id", currentFamilyId)
-      .eq("global_metric_templates.app_type", "basketball:solo");
+      .eq("global_metric_templates.app_type", "basketball:solo"); 
 
     if (error) throw error;
 
     if (!configs || configs.length === 0) {
       console.log("New account detected. Seeding personal settings from global templates...");
-
+      
       const { error: seedError } = await bballDb.rpc('seed_user_default_settings', {
         target_family_id: currentFamilyId,
         target_app_type: 'basketball:solo'
@@ -174,8 +174,8 @@ async function loadInitialApplicationState() {
       price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
       count: 0,
       visible: c.visible,
-      row: c.global_metric_templates.id,
-      section: c.global_metric_templates.section
+      row: c.global_metric_templates.id, 
+      section: c.global_metric_templates.section 
     }));
 
     curData = {
@@ -202,14 +202,14 @@ async function loadInitialApplicationState() {
 function render(d) {
   curData = d;
   document.getElementById('opp').value = d.opp || "";
-  setLoc(d.loc);
+  setLoc(d.loc); 
   setWL(d.res);
   document.getElementById('scoreUs').value = d.su || "";
   document.getElementById('scoreThem').value = d.st || "";
   document.getElementById('pMin').value = d.pm || "";
   document.getElementById('tMin').value = d.tm || "32";
-  if (document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
-
+  if(document.getElementById('defaultTMin')) document.getElementById('defaultTMin').value = d.tm || "32";
+  
   const dl = document.getElementById('seasonList');
   if (dl) {
     dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
@@ -230,9 +230,18 @@ function render(d) {
         <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
       </div>`).join('');
   }
+  
+  // Attach operational change listeners to form inputs for data warnings updates
+  ['scoreUs', 'scoreThem', 'pMin', 'tMin', 'opp', 'season', 'gameDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.listenerAttached) {
+      el.addEventListener('input', () => checkAchievementsAndProtections());
+      el.dataset.listenerAttached = true;
+    }
+  });
 
   recalcTotal();
-  checkAchievementsAndProtections();
+  checkAchievementsAndProtections(); 
   applyLayoutOrder();
 }
 
@@ -256,18 +265,17 @@ function rowHTML(s) {
 }
 
 // ==========================================
-// APP LOGS HISTORY AND ARCHIVE MANAGER
+// APP LOGS HISTORY DATA SYNC & DISPLAY
 // ==========================================
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
   if (historyBody) {
     historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
   }
-
+  
   try {
-    // FIXED: Queries order dynamically using 'game_date' instead of non-existent 'date'
     let { data: games, error } = await bballDb
-      .from("app_history")
+      .from("app_history") 
       .select("*")
       .eq("family_id", currentFamilyId)
       .order("game_date", { ascending: false });
@@ -275,8 +283,8 @@ async function loadHistory() {
     if (error) throw error;
 
     histData = (games || []).map(g => ({
-      sheetRow: g.id,
-      date: g.game_date, // Mapped accurately to column definition
+      sheetRow: g.id, 
+      date: g.game_date, 
       season: g.season || "Season 1",
       opp: g.opponent,
       loc: g.location === "Home" ? "H" : "A",
@@ -324,38 +332,141 @@ async function loadHistory() {
   }
 }
 
+// RESTORED: Generates dynamic tabular markup fields into your active history view panel
+function renderHistory() {
+  const body = document.getElementById('history-body');
+  const head = document.getElementById('history-head');
+  if (!body || !head) return;
+
+  const showDel = document.getElementById('showDel')?.checked || false;
+  const activeSeason = document.getElementById('seasonFilter')?.value;
+
+  const filtered = histData.filter(g => {
+    if (g.isDel !== showDel) return false;
+    if (activeSeason && g.season !== activeSeason) return false;
+    return true;
+  });
+
+  head.innerHTML = `
+    <tr>
+      <th>Date</th><th>Season</th><th>Opponent</th><th>Loc</th><th>Res</th>
+      <th>Our</th><th>Opp</th><th>MIN</th><th>TMIN</th><th>Payout</th>
+    </tr>`;
+
+  if (filtered.length === 0) {
+    body.innerHTML = `<tr><td colspan="40" style="padding:15px;text-align:center;color:#7f8c8d;">No box score logs found.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = filtered.map(g => `
+    <tr>
+      <td>${g.date}</td><td>${g.season}</td><td>${g.opp}</td><td>${g.loc}</td><td>${g.res}</td>
+      <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td><td>${g.tmin}</td>
+      <td style="font-weight:bold;color:#27ae60;">$${g.money.toFixed(2)}</td>
+    </tr>`).join('');
+}
+
+// RESTORED: Collects dynamic state objects to push metrics records to public.app_history
+async function saveGame() {
+  const button = document.querySelector('.save-btn');
+  if (button) { button.disabled = true; button.innerText = "SAVING..."; }
+
+  try {
+    const getI = (id) => document.getElementById(id)?.value || "";
+    const getStat = (name) => curData.stats.find(x => x.name.includes(name))?.count || 0;
+
+    const totalPayout = curData.stats.reduce((sum, x) => sum + (x.count * x.price), 0);
+
+    const gamePayload = {
+      family_id: currentFamilyId,
+      game_date: getI('gameDate'),
+      season: getI('season') || "Season 1",
+      opponent: getI('opp') || "Unknown Opponent",
+      location: isHome ? "Home" : "Away",
+      result: curWL,
+      score_us: parseInt(getI('scoreUs')) || 0,
+      score_them: parseInt(getI('scoreThem')) || 0,
+      player_minutes: parseInt(getI('pMin')) || 0,
+      team_minutes: parseInt(getI('tMin')) || 32,
+      total_payout: totalPayout,
+      rebounds: getStat('Rebounds'),
+      steals: getStat('Steals'),
+      deflections: getStat('Deflections'),
+      jump_balls: getStat('Jump Balls'),
+      blocks: getStat('Blocks'),
+      contested_shots: getStat('Contested'),
+      screens_set: getStat('Hard Screen'),
+      charges_drawn: getStat('Charges Taken'),
+      two_pm: getStat('2PT Made'),
+      two_pa: getStat('2PT Attempt'),
+      ft_m: getStat('FT Made'),
+      ft_a: getStat('FT Attempt'),
+      three_pm: getStat('3PT Made'),
+      three_pa: getStat('3PT Attempt'),
+      assists: getStat('Assists'),
+      turnovers: getStat('Turnovers'),
+      team_fga: getStat('Team FGA'),
+      team_fta: getStat('Team FTA'),
+      team_to: getStat('Team TO'),
+      is_deleted: false
+    };
+
+    const { error } = await bballDb.from('app_history').insert([gamePayload]);
+    if (error) throw error;
+
+    alert("Box score logged successfully!");
+    resetTracker();
+    await loadHistory();
+  } catch (err) {
+    console.error("Data Write Failure:", err);
+    alert("Failed to save box score: " + err.message);
+  } finally {
+    if (button) { button.disabled = false; button.innerText = "SAVE"; }
+  }
+}
+
+function resetTracker() {
+  if (!curData) return;
+  curData.stats.forEach(x => x.count = 0);
+  ['opp', 'scoreUs', 'scoreThem', 'pMin'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  render(curData);
+}
+
 // ==========================================
 // NAVIGATION UTILITIES & APP VIEW ENGINE
 // ==========================================
 function switchTab(t) {
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
+  
   const targetPage = document.getElementById('page-' + t);
   const targetTab = document.getElementById('tab-' + t);
-
+  
   if (targetPage) targetPage.style.display = 'block';
   if (targetTab) targetTab.classList.add('active');
-
+  
   if (t === 'history' && histData.length === 0) loadHistory();
   if (t === 'history' && histData.length > 0) renderHistory();
 }
 
-function autoWL() {
+function autoWL(){
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-  if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
   triggerSync();
 }
 
-function setLoc(h) { isHome = h; document.getElementById('btnHome').classList.toggle('active', h); document.getElementById('btnAway').classList.toggle('active', !h) }
+function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
 
-function setWL(w) {
-  curWL = w;
-  ['btnWin', 'btnTie', 'btnLoss'].forEach(b => {
+function setWL(w){
+  curWL=w;
+  ['btnWin','btnTie','btnLoss'].forEach(b => {
     const el = document.getElementById(b);
     if (el) el.classList.remove('active');
   });
-
+  
   const targetId = w === 'W' ? 'btnWin' : (w === 'T' ? 'btnTie' : 'btnLoss');
   const targetEl = document.getElementById(targetId);
   if (targetEl) targetEl.classList.add('active');
@@ -376,7 +487,7 @@ function applyLayoutOrder() {
   const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
   const container = document.getElementById('tracker-boards-container');
   if (!container) return;
-
+  
   order.forEach(id => {
     const wrapper = document.getElementById('wrap-' + id);
     if (wrapper) container.appendChild(wrapper);
@@ -392,7 +503,7 @@ function recalcTotal() {
 function tally(r, a) {
   const s = curData.stats.find(x => x.row === r);
   if (!s) return;
-
+  
   s.count = Math.max(0, s.count + a);
   document.getElementById(`c-${r}`).innerText = s.count;
 
@@ -420,20 +531,16 @@ function tally(r, a) {
   checkAchievementsAndProtections();
 }
 
-// ==========================================
-// DATA PROTECTION ENGINE & MILESTONE BROADCASTER
-// ==========================================
 function checkAchievementsAndProtections() {
   if (!curData) return;
-
-  // 1. EXTRACT RAW COUNTS FOR LOGIC VALIDATION
+  
   const p2m = curData.stats.find(x => x.name.includes('🎯 2PT Made'))?.count || 0;
   const p2a = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'))?.count || 0;
   const p3m = curData.stats.find(x => x.name.includes('👌 3PT Made'))?.count || 0;
   const p3a = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'))?.count || 0;
   const ftm = curData.stats.find(x => x.name.includes('🥅 FT Made'))?.count || 0;
   const fta = curData.stats.find(x => x.name.includes('🏀 FT Attempt'))?.count || 0;
-
+  
   const rebounds = curData.stats.find(x => x.name.includes('🏀 Rebounds'))?.count || 0;
   const assists = curData.stats.find(x => x.name.includes('🎁 Assists'))?.count || 0;
   const steals = curData.stats.find(x => x.name.includes('🧤 Steals'))?.count || 0;
@@ -448,7 +555,6 @@ function checkAchievementsAndProtections() {
   const tMin = parseInt(document.getElementById('tMin')?.value) || 32;
   const fga = p2a + p3a;
 
-  // 2. RESTORED: Core Business Rules Protection Logic Warnings Array
   let warnings = [];
   if (p2m > p2a) warnings.push("⚠️ 2PT Made exceeds Attempts.");
   if (p3m > p3a) warnings.push("⚠️ 3PT Made exceeds Attempts.");
@@ -468,7 +574,6 @@ function checkAchievementsAndProtections() {
     }
   }
 
-  // 3. RESTORED: Comprehensive Multi-Tier Milestone Aggregator Panel
   const points = (p2m * 2) + (p3m * 3) + ftm;
   const coreCategories = [points, rebounds, assists, steals, blocks];
   const doubleDigitCount = coreCategories.filter(val => val >= 10).length;
@@ -476,7 +581,7 @@ function checkAchievementsAndProtections() {
   let milestones = [];
   if (doubleDigitCount >= 3) milestones.push("🔥 TRIPLE-DOUBLE COUPLING! 🔥");
   else if (doubleDigitCount === 2) milestones.push("⚡ DOUBLE-DOUBLE RECORDED! ⚡");
-
+  
   if (points >= 30) milestones.push("🏆 30+ POINT ELITE SCORING TIER! 🏆");
   else if (points >= 20) milestones.push("🎯 20+ POINT SCORING TIER! 🎯");
 
@@ -498,4 +603,6 @@ function toggleVis(row, val) {
 }
 
 function triggerSync() { checkAchievementsAndProtections(); }
-function renderHistory() { }
+function editPrice() {}
+function commitGameEdit() {}
+function closeEditModal() {}
