@@ -1,15 +1,15 @@
 function setDisplay(id, displayValue) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.style.display = displayValue;
-    } else {
-        console.warn(`Element with id '${id}' not found. Skipping style update.`);
-    }
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = displayValue;
+  } else {
+    console.warn(`Element with id '${id}' not found. Skipping style update.`);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded - safe to look for IDs");
-    // Your initialization code here
+  console.log("DOM fully loaded - safe to look for IDs");
+  // Your initialization code here
 });
 
 // ==========================================
@@ -142,7 +142,7 @@ async function handleAuthAction(type) {
     await loadInitialApplicationState();
 
     //document.getElementById("auth-overlay").style.display = "none";
-   // document.getElementById("main-app-content").style.display = "block";
+    // document.getElementById("main-app-content").style.display = "block";
 
     setDisplay('auth-overlay', 'none');
     setDisplay('main-app-container', 'block');
@@ -301,18 +301,45 @@ function togglePasswordVisibility() {
 }
 
 function switchTab(tabId) {
-    // Hide all pages
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(p => p.style.display = 'none');
-    
-    // Show the selected page
-    const target = document.getElementById('page-' + tabId);
-    if (target) {
-        target.style.display = 'block';
-    }
-    
-    // Update button styling
-    const btns = document.querySelectorAll('.nav-btn');
-    btns.forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
+  // Hide all pages
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(p => p.style.display = 'none');
+
+  // Show the selected page
+  const target = document.getElementById('page-' + tabId);
+  if (target) {
+    target.style.display = 'block';
+  }
+s
+  // Update button styling
+  const btns = document.querySelectorAll('.nav-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+async function loadInitialApplicationState() {
+  console.log("Loading app state for family:", currentFamilyId);
+
+  // 1. Fetch user specific settings
+  let { data: userSettings, error } = await bballDb
+    .from("user_metric_settings")
+    .select(`
+      visible,
+      custom_price,
+      global_metric_templates (stat_name, section, is_counter)
+    `)
+    .eq("family_id", currentFamilyId)
+    .eq("global_metric_templates.app_type", "basketball"); // Simply toggle to 'baseball' for your next project!
+
+  // 2. FALLBACK SEED ENGINE: If user has no preferences yet, clone the defaults
+  if (!userSettings || userSettings.length === 0) {
+    console.log("New account detected. Seeding personal settings from global templates...");
+    await seedUserDefaultSettings(currentFamilyId, "basketball");
+
+    // Re-fetch now that data is populated
+    return loadInitialApplicationState();
+  }
+
+  // 3. Render dynamically based on what the DB returned
+  renderDynamicTrackerBoards(userSettings);
 }
