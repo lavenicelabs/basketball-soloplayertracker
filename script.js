@@ -5,7 +5,24 @@ const supabaseUrl = "https://upgfhekhifolcqiudhzy.supabase.co"; // <-- Replace w
 const supabaseKey = "sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U"; // <-- Replace with your Anon Public Key
 
 const bballDb = window.supabase.createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bball-tracker-auth', },
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storageKey: 'bball-tracker-auth', // Consistent naming
+        // ADD THIS: This clears invalid sessions automatically
+        persistSession: true 
+    },
+});
+
+// Force sign out if the session is invalid instead of hanging
+bballDb.auth.onAuthStateChange((event, session) => {
+    if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        console.log("Auth State Changed: Session active");
+    }
+    if (event === 'SIGNED_OUT') {
+        console.warn("Auth State Changed: User signed out");
+        window.location.reload();
+    }
 });
 
 let authenticatedUser = null;
@@ -243,4 +260,22 @@ function updateStatus(msg, err) {
 function togglePasswordVisibility() {
   const pf = document.getElementById("auth-password");
   if (pf) pf.type = pf.type === "password" ? "text" : "password";
+}
+
+function switchToMainContent() {
+    const container = document.getElementById("main-app-container"); // Change this to your actual container ID
+    if (!container) {
+        console.error("CRITICAL: Container 'main-app-container' not found in DOM!");
+        return;
+    }
+    
+    // Force the element to show
+    container.style.display = "block"; 
+    container.style.visibility = "visible";
+    
+    // Check if the container is actually empty
+    console.log("Container innerHTML length:", container.innerHTML.length);
+    if (container.innerHTML.length === 0) {
+        console.warn("Container is found but is empty!");
+    }
 }
