@@ -1,3 +1,12 @@
+function setDisplay(id, displayValue) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.display = displayValue;
+    } else {
+        console.warn(`Element with id '${id}' not found. Skipping style update.`);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded - safe to look for IDs");
     // Your initialization code here
@@ -132,8 +141,11 @@ async function handleAuthAction(type) {
 
     await loadInitialApplicationState();
 
-    document.getElementById("auth-overlay").style.display = "none";
-    document.getElementById("main-app-content").style.display = "block";
+    //document.getElementById("auth-overlay").style.display = "none";
+   // document.getElementById("main-app-content").style.display = "block";
+
+    setDisplay('auth-overlay', 'none');
+    setDisplay('main-app-content', 'block');
 
   } catch (err) {
     console.error("Critical error:", err);
@@ -171,8 +183,13 @@ async function checkActiveSession() {
         .maybeSingle();
 
       currentFamilyId = profile?.family_id || "default_family";
-      document.getElementById("auth-overlay").style.display = "none";
-      document.getElementById("main-app-content").style.display = "block";
+
+      //document.getElementById("auth-overlay").style.display = "none";
+      //document.getElementById("main-app-content").style.display = "block";
+
+      setDisplay('auth-overlay', 'none');
+      setDisplay('main-app-content', 'block');
+
       await loadInitialApplicationState();
     }
   } catch (err) {
@@ -229,8 +246,12 @@ async function loadInitialApplicationState() {
     render(curData);
 
     // 3. UI switch logic added here to fix your white page issue
-    document.getElementById("auth-overlay").style.display = "none";
-    document.getElementById("main-app-content").style.display = "block";
+    //document.getElementById("auth-overlay").style.display = "none";
+    //document.getElementById("main-app-content").style.display = "block";
+
+    setDisplay('auth-overlay', 'none');
+    setDisplay('main-app-content', 'block');
+
     console.log("UI Switched to main content.");
 
     const mainContent = document.getElementById("main-app-container");
