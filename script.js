@@ -10,23 +10,112 @@ let pendingSync = false;
 let currentFamilyId = 'default_family';
 let isAppInitialized = false;
 
+// Initialize Event Listeners on DOM Load
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const dateInput = document.getElementById('gameDate');
   if (dateInput) {
     dateInput.value = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
   }
+
+  // RESTORED & PROTECTED: Auto-click Sign-In button when pressing Enter on password/email inputs
+  const passwordInput = document.getElementById('auth-password');
+  const emailInput = document.getElementById('auth-email');
+  
+  const handleEnterKey = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleAuthAction('login');
+    }
+  };
+
+  if (passwordInput) passwordInput.addEventListener('keydown', handleEnterKey);
+  if (emailInput) emailInput.addEventListener('keydown', handleEnterKey);
 });
 
+// ==========================================
+// AUTHENTICATION CONTROLLER & INTERFACE LOGIC
+// ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
   if (isAppInitialized) return; 
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
+      updateStatus("Session active. Fetching profile...", false);
       await fetchUserProfile(session.user.id);
     }
   }
 });
+
+function updateStatus(msg, isError) {
+  const statusEl = document.getElementById('auth-status');
+  if (statusEl) {
+    statusEl.innerText = msg;
+    statusEl.style.color = isError ? '#e74c3c' : '#2980b9';
+  }
+}
+
+function togglePasswordVisibility() {
+  const passwordInput = document.getElementById('auth-password');
+  const toggleBtn = document.getElementById('toggle-password-btn');
+  if (!passwordInput || !toggleBtn) return;
+
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    toggleBtn.innerText = '🙈'; 
+  } else {
+    passwordInput.type = 'password';
+    toggleBtn.innerText = '👁️'; 
+  }
+}
+
+function smartRegister() {
+  const accessKeyInput = document.getElementById('auth-access-key');
+  if (accessKeyInput) {
+    if (accessKeyInput.style.display === 'none' || accessKeyInput.style.display === '') {
+      accessKeyInput.style.display = 'block';
+      updateStatus("Enter email, password, and registration Access Key.", false);
+    } else {
+      handleAuthAction('register');
+    }
+  }
+}
+
+async function handleAuthAction(actionType) {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const accessKey = document.getElementById('auth-access-key').value.trim();
+
+  if (!email || !password) {
+    updateStatus("Please enter both Email and Password.", true);
+    return;
+  }
+
+  try {
+    if (actionType === 'login') {
+      updateStatus("Signing in...", false);
+      const { data, error } = await bballDb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } else if (actionType === 'register') {
+      if (!accessKey) {
+        updateStatus("Access Key required for registration verification.", true);
+        return;
+      }
+      updateStatus("Validating access and registering...", false);
+      
+      const { data, error } = await bballDb.auth.signUp({
+        email,
+        password,
+        options: { data: { registration_key: accessKey } }
+      });
+      if (error) throw error;
+      updateStatus("Registration successful! Check your email for verification.", false);
+    }
+  } catch (err) {
+    console.error("Auth Error Logging Transaction:", err);
+    updateStatus(err.message, true);
+  }
+}
 
 async function fetchUserProfile(userId) {
   try {
@@ -43,6 +132,9 @@ async function fetchUserProfile(userId) {
   }
 }
 
+// ==========================================
+// INITIAL APPLICATION DATA POPULATION ENGINE
+// ==========================================
 async function loadInitialApplicationState() {
   try {
     let { data: configs, error } = await bballDb
@@ -84,6 +176,9 @@ async function loadInitialApplicationState() {
   }
 }
 
+// ==========================================
+// CORE LAYOUT GENERATION & INTERFACE FILTERS
+// ==========================================
 function render(d) {
   curData = d;
   document.getElementById('opp').value = d.opp || "";
@@ -99,7 +194,7 @@ function render(d) {
     document.getElementById('season').value = d.seasons[d.seasons.length - 1];
   }
 
-  // FIXED: Filter out the advanced calculations from ever rendering on the active tracker panel
+  // FIXED: Strictly filter out advanced calculations from ever rendering on the logging panels
   document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
@@ -192,7 +287,7 @@ function renderHistory() {
   const visibleTemplates = curData.stats.filter(s => s.visible);
   const reportingGroups = [...new Set(visibleTemplates.map(s => s.reportGroup))];
 
-  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle;">Action</th><th colspan="7" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
+  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle; padding:10px;">Action</th><th colspan="7" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
   let subRowHTML = `<tr style="background:#f2f4f4; font-size:0.85rem;"><th>Date</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
 
   reportingGroups.forEach(groupName => {
@@ -200,13 +295,18 @@ function renderHistory() {
     if (groupStats.length > 0) {
       topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupStats[0].colorTheme}; border-left:1px solid #fff;">${groupName}</th>`;
       groupStats.forEach(s => {
-        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
+        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; font-weight:600; padding:6px; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
       });
     }
   });
 
-  topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle;">Payout</th></tr><tr>`;
+  topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center;">Payout</th></tr><tr>`;
   head.innerHTML = topRowHTML + subRowHTML;
+
+  if (filtered.length === 0) {
+    body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No box score logs found.</td></tr>`;
+    return;
+  }
 
   body.innerHTML = filtered.map(g => {
     let statsColumnsHTML = '';
@@ -214,7 +314,7 @@ function renderHistory() {
       name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
     }));
 
-    // Evaluate equations for historical entries
+    // Evaluate equations dynamically for historical reporting rows
     histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
       let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
       histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
@@ -232,16 +332,15 @@ function renderHistory() {
     });
 
     return `
-      <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem;">
-        <td><button onclick="openModal('${g.sheetRow}')">✏️</button></td>
-        <td style="font-weight:bold; white-space:nowrap;">${g.date}</td>
-        <td style="text-align:left; font-weight:500;">${g.opp}</td>
+      <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
+        <td style="padding:6px;"><button class="reset-btn" style="padding:4px 8px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
+        <td style="font-weight:bold; white-space:nowrap; padding:8px;">${g.date}</td>
+        <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
         <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
         <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
         <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
         ${statsColumnsHTML}
-        <!-- FIXED: Explicit payout resolution mapping rendered safely inside the database grid column -->
-        <td style="font-weight:bold; color:#27ae60; background:#f4fbf7;">$${g.money.toFixed(2)}</td>
+        <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
       </tr>`;
   }).join('');
 }
@@ -255,7 +354,7 @@ async function saveGame() {
 
   try {
     const getI = (id) => document.getElementById(id)?.value || "";
-    // FIXED: Filter out advanced/calculated types so payouts only calculate from true scoring incentives
+    // FIXED: Calculate total payouts purely based on non-formula template entries
     const totalPayout = curData.stats.filter(s => s.formula === null).reduce((sum, x) => sum + (x.count * x.price), 0);
 
     const logHeader = {
@@ -289,7 +388,7 @@ async function saveGame() {
 }
 
 // ==========================================
-// RESTORED: MODAL EDITING FOR HISTORY LOGS
+// RESTORED: NATIVE MODAL HISTORIC EDITING
 // ==========================================
 function openModal(logId) {
   const g = histData.find(x => x.sheetRow === logId);
@@ -306,7 +405,6 @@ function openModal(logId) {
   document.getElementById('eTMin').value = g.tmin;
   document.getElementById('eMoney').value = g.money.toFixed(2);
 
-  // Map box score inputs back to the form dynamically
   const inputMap = {
     '🏀 Rebounds': 'eReb', '🧤 Steals': 'eStl', '🖐️ Deflections': 'eDef', '⛹️ Jump Balls': 'eJmp',
     '🚫 Blocks': 'eBlk', '🤚 Contested': 'eCont', '🛡️ Hard Screen': 'eScrn', '🛑 Charges Taken': 'eChg',
