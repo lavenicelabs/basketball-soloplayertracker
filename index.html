@@ -1,21 +1,127 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+
   <meta name="apple-mobile-web-app-title" content="BBall Tracker">
   <meta name="application-name" content="BBall Tracker">
 
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/basketball-emoji.png">
   <link rel="icon" type="image/png" sizes="192x192" href="https://img.icons8.com/emoji/192/basketball-emoji.png">
 
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f9f7f5; margin: 0; padding: 0; color: #2c3e50; }
+    
+    /* Sleek Branding Header */
+    .app-brand-header {
+      background: #2c3e50;
+      color: #ffffff;
+      padding: 12px 14px 6px 14px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 110;
+    }
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .app-subtitle {
+      font-size: 0.7rem;
+      color: #bdc3c7;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .nav { display: flex; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 57px; z-index: 100; }
+    .nav-btn { flex: 1; padding: 12px 4px; background: none; border: none; color: #95a5a6; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 3px solid transparent; }
+    .nav-btn.active { color: #2980b9; border-bottom: 3px solid #2980b9; }
+    .page { display: none; padding: 8px; margin: 0 auto; max-width: 1600px; }
+    .active { display: block; }
+    #page-tracker { max-width: 800px; }
+    .header { background: #fff; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .input-row { display: flex; gap: 8px; width: 100%; }
+    input, select { flex: 1; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; background: #fdfdfd; min-width: 0; }
+    .toggle-group { display: flex; flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+    .seg-btn { flex: 1; padding: 8px; border: none; background: #f8f9fa; cursor: pointer; font-size: 0.75rem; font-weight: 800; color: #7f8c8d; }
+    .seg-btn.active { background: #2c3e50; color: white; }
+    .section-title { font-size: 0.85rem; font-weight: 800; color: #7f8c8d; margin: 12px 0 6px 4px; text-transform: uppercase; }
+    .tracker-list { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px; border-left: 4px solid #ccc; }
+    .list-def { border-left-color: #3498db; }
+    .list-off { border-left-color: #e67e22; }
+    .list-team { border-left-color: #9b59b6; }
+    .t-row { display: flex; align-items: center; border-bottom: 1px solid #f0f0f0; padding: 8px 12px; }
+    .t-controls { display: flex; align-items: center; gap: 6px; width: 110px; }
+    .btn-c { width: 32px; height: 32px; border: none; border-radius: 50%; font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; }
+    .btn-m { background: #f1f2f6; color: #747d8c; }
+    .btn-p { background: #eccc68; color: #2f3542; }
+    .t-count { font-size: 1.3rem; font-weight: 800; width: 28px; text-align: center; }
+    .t-stat { flex: 1; font-weight: 700; font-size: 0.85rem; color: #34495e; }
+    .t-money { text-align: right; }
+    .t-price { font-size: 0.7rem; color: #2980b9; margin-bottom: 2px; cursor: pointer; text-decoration: underline; }
+    .t-sub { font-weight: 800; color: #27ae60; font-size: 0.95rem; }
+    .footer { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: #fff; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; }
+    .total-val { color: #2ecc71; font-size: 1.3rem; font-weight: 800; margin-left: 6px; }
+    .save-btn { background: #27ae60; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+    .save-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+    .reset-btn { background: #e74c3c; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+    .reset-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+    .history-container { 
+      overflow-x: auto; 
+      overflow-y: auto;
+      max-height: 70vh; 
+      background: #fff; 
+      border-radius: 12px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+    th { 
+      font-weight: 800; 
+      background: #f8f9fa; 
+      border-bottom: 2px solid #bdc3c7; 
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+    .edit-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 10px; }
+    .edit-grid label { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; display: block; margin-bottom: 2px; }
+    .edit-grid input, .edit-grid select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin-bottom: 5px; }
+    #achievements-container { color: #d35400; font-size: 1.1rem; font-weight: 900; text-align: center; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); display: none; }
+    #warnings-container { color: #c0392b; font-size: 0.85rem; font-weight: bold; margin: 0 0 12px 0; background: #fadbd8; padding: 10px; border-radius: 8px; display: none; line-height: 1.4; border-left: 4px solid #e74c3c; }
+    
+    .help-card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 15px; font-size: 0.9rem; line-height: 1.5; }
+    .help-card strong { color: #2980b9; }
+    .help-card ul { margin: 8px 0 0 0; padding-left: 20px; }
+    .help-card li { margin-bottom: 6px; }
+    
+    .individual-disclaimer { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; color: #2471a3; }
+    .brand-logo-container { text-align: center; margin: 10px 0 20px 0; }
+    .brand-logo-container img { max-width: 220px; border-radius: 8px; }
+    
+    .support-card { background: #ebf5fb; border: 1.5px solid #2980b9; text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .support-btn { display: inline-block; background: #008cff; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,140,255,0.3); transition: background 0.2s; }
+    .contact-btn { display: inline-block; background: #2c3e50; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: background 0.2s; }
+  </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js?t=1719500000"></script>
 </head>
 <body>
 
+  <!-- AUTHENTICATION GATEWAY PANEL OVERLAY[cite: 7] -->
   <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
       <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
@@ -36,6 +142,7 @@
     </div>
   </div>
 
+  <!-- CORE APPLICATION CONTAINER FRAMEWAY[cite: 7] -->
   <div id="main-app-container" style="display: none">
 
     <div class="app-brand-header">
@@ -50,6 +157,7 @@
       <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
     </div>
 
+    <!-- TRACKER PANEL LAYOUT[cite: 7] -->
     <div id="page-tracker" class="page active">
       <div class="header">
         <div class="input-row">
@@ -80,6 +188,7 @@
         </div>
       </div>
       
+      <!-- Sortable Boards Target Container[cite: 7] -->
       <div id="tracker-boards-container">
         <div id="wrap-def">
           <div class="section-title">🛡️ Defense</div>
@@ -107,6 +216,7 @@
       </div>
     </div>
 
+    <!-- HISTORY PANEL LAYOUT[cite: 7] -->
     <div id="page-history" class="page">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <h3 style="margin:0;font-size:1rem">Game Logs Matrix</h3>
@@ -117,21 +227,25 @@
           <select id="seasonFilter" onchange="renderHistory()"></select>
         </div>
       </div>
-      <div class="history-container" style="width:100%; overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; text-align:center;">
+      <div class="history-container">
+        <table>
           <thead id="history-head"></thead>
           <tbody id="history-body"></tbody>
         </table>
       </div>
     </div>
 
+    <!-- SETTINGS PANEL LAYOUT[cite: 7] -->
     <div id="page-settings" class="page">
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Set the standard game length for your league.</p>
         <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
       </div>
+
       <div class="header">
-        <h3 style="margin:0 0 10px 0;">Tracker Layout Sections Order</h3>
+        <h3 style="margin:0 0 10px 0;">Tracker Layout</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.</p>
         <select id="layoutOrder" onchange="updateLayoutOrder()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
           <option value="def,off,team">Defense ➔ Offense ➔ Team</option>
           <option value="off,def,team">Offense ➔ Defense ➔ Team</option>
@@ -139,46 +253,99 @@
           <option value="team,def,off">Team ➔ Defense ➔ Offense</option>
         </select>
       </div>
+
       <div class="header">
-        <h3 style="margin:0 0 10px 0;">Visible Metrics Profile Configurations</h3>
+        <h3 style="margin:0 0 10px 0;">Visible Stats</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History tabs.</p>
         <div id="settings-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
 
+    <!-- FULLY RESTORED DOCUMENTATION HELP TAB PANEL[cite: 7] -->
     <div id="page-help" class="page">
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
         <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
+        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
         <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
-          <strong>iPhone (Safari):</strong> Share ➔ <strong>Add to Home Screen</strong>.<br>
-          <strong>Android (Chrome):</strong> Options ➔ <strong>Add to Home Screen</strong>.
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
         </div>
+      </div>
+
+      <div class="individual-disclaimer">
+        <strong>ℹ️ Individual Player Tracker</strong><br>
+        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
+      </div>
+
+      <div class="header">
+        <h3 style="margin:0 0 5px 0;">App Documentation</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
+      </div>
+
+      <div class="section-title">📱 App Workflow</div>
+      <div class="help-card">
+        <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
+        </div>
+        <ul>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
+          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.</li>
+        </ul>
+      </div>
+
+      <div class="section-title">📈 Advanced Metrics</div>
+      <div class="help-card">
+        <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion counters.<br><br>
+        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.<br><br>
+        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.<br><br>
+        <strong>A/TO</strong>: Assist to Turnover Ratio.
+      </div>
+
+      <div class="brand-logo-container">
+        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">
+      </div>
+
+      <!-- Support Card -->
+      <div class="support-card">
+        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support LaVenice Labs</strong>
+        <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
+          If you purchased this tracker on Etsy, thank you so much for your support!
+        </p>
+        <a href="https://venmo.com/u/LaveniceLabs" target="_blank" class="support-btn">
+          ☕ Tip on Venmo (@LaveniceLabs)
+        </a>
       </div>
     </div>
 
-    <div id="editModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
-      <div class="modal-content" style="background:white; padding:20px; border-radius:12px; width:90%; max-width:500px; max-height:85vh; overflow-y:auto; box-shadow:0 4px 20px rgba(0,0,0,0.3); font-family:inherit;">
+    <!-- DYNAMIC REPORT LOGS EDIT OVERLAY MODAL DIALOG CONTAINER[cite: 7] -->
+    <div id="editModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px;">
         <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>
         
         <input type="hidden" id="editRow">
         
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-          <div><label style="font-size:0.8rem; font-weight:bold;">Game Date</label><input type="date" id="editDate" style="width:100%; padding:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.8rem; font-weight:bold;">Opponent</label><input type="text" id="editOpp" style="width:100%; padding:6px; box-sizing:border-box;"></div>
+        <div class="edit-grid">
+          <div><label>Game Date</label><input type="date" id="editDate"></div>
+          <div><label>Opponent</label><input type="text" id="editOpp"></div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
-          <div><label style="font-size:0.8rem; font-weight:bold;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.8rem; font-weight:bold;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.8rem; font-weight:bold;">Result</label><select id="editWL" style="width:100%; padding:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
-          <div><label style="font-size:0.8rem; font-weight:bold;">Location</label><select id="editLoc" style="width:100%; padding:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>
-          <div><label style="font-size:0.8rem; font-weight:bold;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.8rem; font-weight:bold;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
         </div>
 
         <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>
+        <!-- Dynamic Form Target Container -->
         <div id="dynamic-modal-stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
 
         <div style="margin-bottom:15px;">
