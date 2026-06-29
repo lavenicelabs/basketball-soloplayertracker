@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auto-click Sign-In button when pressing Enter on password/email inputs
   const passwordInput = document.getElementById('auth-password');
   const emailInput = document.getElementById('auth-email');
-  
+
   const handleEnterKey = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
 bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isAppInitialized) return; 
+  if (isAppInitialized) return;
   if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
     if (session) {
       isAppInitialized = true;
@@ -62,10 +62,10 @@ function togglePasswordVisibility() {
 
   if (passwordInput.type === 'password') {
     passwordInput.type = 'text';
-    toggleBtn.innerText = '🙈'; 
+    toggleBtn.innerText = '🙈';
   } else {
     passwordInput.type = 'password';
-    toggleBtn.innerText = '👁️'; 
+    toggleBtn.innerText = '👁️';
   }
 }
 
@@ -102,7 +102,7 @@ async function handleAuthAction(actionType) {
         return;
       }
       updateStatus("Validating access and registering...", false);
-      
+
       const { data, error } = await bballDb.auth.signUp({
         email,
         password,
@@ -120,15 +120,15 @@ async function handleAuthAction(actionType) {
 async function fetchUserProfile(userId) {
   try {
     let { data: profile, error } = await bballDb
-      .from('profiles') 
+      .from('profiles')
       .select('family_id')
-      .eq('user_id', userId) 
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (!error && profile) currentFamilyId = profile.family_id;
     await loadInitialApplicationState();
   } catch (err) {
-    await loadInitialApplicationState(); 
+    await loadInitialApplicationState();
   }
 }
 
@@ -144,7 +144,7 @@ async function loadInitialApplicationState() {
         global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme, formula)
       `)
       .eq("family_id", currentFamilyId)
-      .eq("global_metric_templates.app_type", "basketball:solo"); 
+      .eq("global_metric_templates.app_type", "basketball:solo");
 
     if (error) throw error;
 
@@ -155,7 +155,7 @@ async function loadInitialApplicationState() {
       price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
       count: 0,
       visible: c.visible,
-      row: c.global_metric_templates.id, 
+      row: c.global_metric_templates.id,
       section: c.global_metric_templates.section,
       isCounter: c.global_metric_templates.is_counter,
       reportGroup: c.global_metric_templates.report_group,
@@ -187,7 +187,7 @@ function render(d) {
   document.getElementById('scoreThem').value = d.st || "";
   document.getElementById('pMin').value = d.pm || "";
   document.getElementById('tMin').value = d.tm || "32";
-  
+
   const dl = document.getElementById('seasonList');
   if (dl) dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
   if (!document.getElementById('season').value && d.seasons.length > 0) {
@@ -207,7 +207,7 @@ function render(d) {
         <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
       </div>`).join('');
   }
-  
+
   ['scoreUs', 'scoreThem', 'pMin', 'tMin', 'opp', 'season', 'gameDate'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.dataset.listenerAttached) {
@@ -217,7 +217,7 @@ function render(d) {
   });
 
   recalcTotal();
-  checkAchievementsAndProtections(); 
+  checkAchievementsAndProtections();
   applyLayoutOrder();
 }
 
@@ -247,10 +247,10 @@ function rowHTML(s) {
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
   if (historyBody) historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
-  
+
   try {
     let { data: games, error } = await bballDb
-      .from("game_logs") 
+      .from("game_logs")
       .select(`
         id, game_date, season, opponent, location, result, score_us, score_them,
         player_minutes, team_minutes, total_payout, is_deleted,
@@ -268,7 +268,7 @@ async function loadHistory() {
         sheetRow: g.id, date: g.game_date, season: g.season || "Season 1", opp: g.opponent,
         loc: g.location === "Home" ? "H" : "A", res: g.result, su: g.score_us, st: g.score_them,
         min: g.player_minutes, tmin: g.team_minutes, money: Number(g.total_payout || 0),
-        isDel: g.is_deleted || false, rawStats: statsMap 
+        isDel: g.is_deleted || false, rawStats: statsMap
       };
     });
 
@@ -294,26 +294,42 @@ function renderHistory() {
 
   const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
   const visibleTemplates = curData.stats.filter(s => s.visible);
-  
+
   // Extract report groups in the exact order specified by your database weight identifiers
   const orderedGroups = [];
   visibleTemplates.forEach(s => {
     if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
   });
 
-  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle; padding:8px;">Action</th><th colspan="7" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
-  let subRowHTML = `<tr style="background:#f2f4f4; font-size:0.85rem;"><th>Date</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
+  // --- FULLY DYNAMIC DOUBLE-HEADER LAYOUT BUILDER ---
+  // 1. Build the Universal Match Data headers dynamically to span exactly 7 columns
+  let topRowHTML = `
+    <tr style="background:#2c3e50; color:white;">
+      <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
+      <th colspan="7" style="text-align:center; background:#2980b9; padding:8px;">Universal Match Data</th>`;
 
+  let subRowHTML = `
+    <tr style="background:#f2f4f4; font-size:0.85rem; color:#2c3e50;">
+      <th class="sticky-2" style="background:#f2f4f4;">Date</th>
+      <th>Opponent</th>
+      <th>Loc</th>
+      <th>Res</th>
+      <th>Our</th>
+      <th>Opp</th>
+      <th>MIN</th>`;
+
+  // 2. Append database-driven sport metrics groups and specific subheaders
   orderedGroups.forEach(groupName => {
     const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
     if (groupStats.length > 0) {
-      topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupStats[0].colorTheme}; border-left:1px solid #fff;">${groupName}</th>`;
+      topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupStats[0].colorTheme}; border-left:1px solid #fff; padding:8px;">${groupName}</th>`;
       groupStats.forEach(s => {
-        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; font-weight:600; padding:6px; min-width:65px;">${s.name.split(' ')[1] || s.name}</th>`;
+        subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; font-weight:600; padding:6px; min-width:65px;">${s.name}</th>`;
       });
     }
   });
 
+  // 3. Close out the table headers assembly cleanly
   topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
   head.innerHTML = topRowHTML + subRowHTML;
 
@@ -322,18 +338,19 @@ function renderHistory() {
     return;
   }
 
+  // 4. Populate row data values grid cells matching header indexes
   body.innerHTML = filtered.map(g => {
     let statsColumnsHTML = '';
     const histStatsInstance = curData.stats.map(s => ({
       name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
     }));
 
-    // Evaluate live dynamic templates calculations for historical rows
+    // Evaluate live dynamic template formulas (e.g., 2PT%, 3PT%, eFG%, USG%)
     histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
       let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
       histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
       equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
-      try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
+      try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch (e) { fStat.count = 0; }
     });
 
     orderedGroups.forEach(groupName => {
@@ -347,16 +364,61 @@ function renderHistory() {
 
     return `
       <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
-        <td style="padding:4px;"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
-        <td style="font-weight:bold; white-space:nowrap; padding:8px;">${g.date}</td>
+        <td style="padding:4px;" class="sticky-1"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
+        <td style="font-weight:bold; white-space:nowrap; padding:8px;" class="sticky-2">${g.date}</td>
         <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
-        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
-        <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
+        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc === 'H' ? '#e8f4f8' : '#fcf3cf'}; color:${g.loc === 'H' ? '#2980b9' : '#f39c12'};">${g.loc}</span></td>
+        <td><span style="font-weight:bold; color:${g.res === 'W' ? '#27ae60' : (g.res === 'L' ? '#c0392b' : '#7f8c8d')}">${g.res}</span></td>
         <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
         ${statsColumnsHTML}
         <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
       </tr>`;
   }).join('');
+}
+
+topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
+head.innerHTML = topRowHTML + subRowHTML;
+
+if (filtered.length === 0) {
+  body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No logs found.</td></tr>`;
+  return;
+}
+
+body.innerHTML = filtered.map(g => {
+  let statsColumnsHTML = '';
+  const histStatsInstance = curData.stats.map(s => ({
+    name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
+  }));
+
+  // Evaluate live dynamic templates calculations for historical rows
+  histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
+    let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
+    histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
+    equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
+    try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch (e) { fStat.count = 0; }
+  });
+
+  orderedGroups.forEach(groupName => {
+    visibleTemplates.filter(s => s.reportGroup === groupName).forEach(s => {
+      const match = histStatsInstance.find(x => x.name === s.name);
+      let displayVal = match ? match.count : 0;
+      let formattedStr = s.section === 'advanced' ? displayVal.toFixed(1) + (s.name.includes('%') ? '%' : '') : displayVal;
+      statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff; border-left:1px solid #f2f4f4;">${formattedStr}</td>`;
+    });
+  });
+
+  return `
+      <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
+        <td style="padding:4px;"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
+        <td style="font-weight:bold; white-space:nowrap; padding:8px;">${g.date}</td>
+        <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
+        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc === 'H' ? '#e8f4f8' : '#fcf3cf'}; color:${g.loc === 'H' ? '#2980b9' : '#f39c12'};">${g.loc}</span></td>
+        <td><span style="font-weight:bold; color:${g.res === 'W' ? '#27ae60' : (g.res === 'L' ? '#c0392b' : '#7f8c8d')}">${g.res}</span></td>
+        <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
+        ${statsColumnsHTML}
+        <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
+      </tr>`;
+}).join('');
 }
 
 // ==========================================
@@ -477,7 +539,7 @@ async function saveEdit() {
 function recalcEditMoney() {
   const rawCountersOnly = curData.stats.filter(s => s.formula === null);
   let newTotal = 0;
-  
+
   rawCountersOnly.forEach(s => {
     const targetInput = document.getElementById(`modal-input-${s.row}`);
     if (targetInput) {
@@ -501,24 +563,24 @@ function resetTracker() {
 function switchTab(t) {
   document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  
+
   const targetPage = document.getElementById('page-' + t);
   const targetTab = document.getElementById('tab-' + t);
-  
+
   if (targetPage) targetPage.style.display = 'block';
   if (targetTab) targetTab.classList.add('active');
   if (t === 'history') loadHistory();
 }
 
-function autoWL(){
+function autoWL() {
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-  if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+  if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
 }
 
-function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
-function setWL(w){
-  curWL=w;
-  ['btnWin','btnTie','btnLoss'].forEach(b => document.getElementById(b)?.classList.remove('active'));
+function setLoc(h) { isHome = h; document.getElementById('btnHome').classList.toggle('active', h); document.getElementById('btnAway').classList.toggle('active', !h) }
+function setWL(w) {
+  curWL = w;
+  ['btnWin', 'btnTie', 'btnLoss'].forEach(b => document.getElementById(b)?.classList.remove('active'));
   const targetId = w === 'W' ? 'btnWin' : (w === 'T' ? 'btnTie' : 'btnLoss');
   document.getElementById(targetId)?.classList.add('active');
 }
@@ -551,14 +613,14 @@ function toggleVis(row, val) {
 
 function checkAchievementsAndProtections() {
   if (!curData) return;
-  
+
   const p2m = curData.stats.find(x => x.name.includes('🎯 2PT Made'))?.count || 0;
   const p2a = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'))?.count || 0;
   const p3m = curData.stats.find(x => x.name.includes('👌 3PT Made'))?.count || 0;
   const p3a = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'))?.count || 0;
   const ftm = curData.stats.find(x => x.name.includes('🥅 FT Made'))?.count || 0;
   const fta = curData.stats.find(x => x.name.includes('🏀 FT Attempt'))?.count || 0;
-  
+
   const rebounds = curData.stats.find(x => x.name.includes(' Rebounds'))?.count || 0;
   const assists = curData.stats.find(x => x.name.includes('🎁 Assists'))?.count || 0;
   const steals = curData.stats.find(x => x.name.includes('🧤 Steals'))?.count || 0;
@@ -599,7 +661,7 @@ function checkAchievementsAndProtections() {
   let milestones = [];
   if (doubleDigitCount >= 3) milestones.push("🔥 TRIPLE-DOUBLE COUPLING! 🔥");
   else if (doubleDigitCount === 2) milestones.push("⚡ DOUBLE-DOUBLE RECORDED! ⚡");
-  
+
   if (points >= 30) milestones.push("🏆 30+ POINT ELITE SCORING TIER! 🏆");
   else if (points >= 20) milestones.push("🎯 20+ POINT SCORING TIER! 🎯");
 
@@ -624,17 +686,17 @@ function tally(r, a) {
   const s = curData.stats.find(x => x.row === r);
   if (!s) return;
   s.count = Math.max(0, s.count + a);
-  
+
   if (a > 0) {
     if (s.name.includes('🎯 2PT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
-      if (attRow) attRow.count++; 
+      if (attRow) attRow.count++;
     } else if (s.name.includes('🥅 FT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 FT Attempt'));
-      if (attRow) attRow.count++; 
+      if (attRow) attRow.count++;
     } else if (s.name.includes('👌 3PT Made')) {
       const attRow = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'));
-      if (attRow) attRow.count++; 
+      if (attRow) attRow.count++;
     }
   }
   render(curData);
