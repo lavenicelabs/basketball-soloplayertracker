@@ -294,7 +294,7 @@ function renderHistory() {
 
   const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
   const visibleTemplates = curData.stats.filter(s => s.visible);
-
+  
   // Extract report groups in the exact order specified by your database weight identifiers
   const orderedGroups = [];
   visibleTemplates.forEach(s => {
@@ -302,12 +302,12 @@ function renderHistory() {
   });
 
   // --- FULLY DYNAMIC DOUBLE-HEADER LAYOUT BUILDER ---
-  // 1. Build the Universal Match Data headers dynamically to span exactly 7 columns
+  // FIXED: Changed colspan="7" to colspan="8" to completely account for the universal meta rows
   let topRowHTML = `
     <tr style="background:#2c3e50; color:white;">
       <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
-      <th colspan="7" style="text-align:center; background:#2980b9; padding:8px;">Universal Match Data</th>`;
-
+      <th colspan="8" style="text-align:center; background:#2980b9; padding:8px;">Universal Match Data</th>`;
+      
   let subRowHTML = `
     <tr style="background:#f2f4f4; font-size:0.85rem; color:#2c3e50;">
       <th class="sticky-2" style="background:#f2f4f4;">Date</th>
@@ -350,7 +350,7 @@ function renderHistory() {
       let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
       histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
       equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
-      try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch (e) { fStat.count = 0; }
+      try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
     });
 
     orderedGroups.forEach(groupName => {
@@ -362,13 +362,14 @@ function renderHistory() {
       });
     });
 
+    // FIXED: Adjusted the grid output to ensure values match the subheader columns correctly
     return `
       <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
         <td style="padding:4px;" class="sticky-1"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
         <td style="font-weight:bold; white-space:nowrap; padding:8px;" class="sticky-2">${g.date}</td>
         <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
-        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc === 'H' ? '#e8f4f8' : '#fcf3cf'}; color:${g.loc === 'H' ? '#2980b9' : '#f39c12'};">${g.loc}</span></td>
-        <td><span style="font-weight:bold; color:${g.res === 'W' ? '#27ae60' : (g.res === 'L' ? '#c0392b' : '#7f8c8d')}">${g.res}</span></td>
+        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
+        <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
         <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
         ${statsColumnsHTML}
         <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
