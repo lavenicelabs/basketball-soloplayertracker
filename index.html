@@ -93,6 +93,11 @@
       top: 0;
       z-index: 10;
     }
+    
+    /* Fixed Dynamic Header Sticky Offsets */
+    .sticky-1 { position: sticky; left: 0; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
+    .sticky-2 { position: sticky; left: 60px; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
+    
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
     .modal-content { background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
     .edit-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 10px; }
@@ -113,15 +118,14 @@
     
     .support-card { background: #ebf5fb; border: 1.5px solid #2980b9; text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .support-btn { display: inline-block; background: #008cff; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,140,255,0.3); transition: background 0.2s; }
-    .contact-btn { display: inline-block; background: #2c3e50; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: background 0.2s; }
   </style>
 
+  <!-- Supabase Production Context Client Framework -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?t=1719500000"></script>
 </head>
 <body>
 
-  <!-- AUTHENTICATION GATEWAY PANEL OVERLAY[cite: 7] -->
+  <!-- AUTHENTICATION GATEWAY PANEL OVERLAY[cite: 6] -->
   <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
       <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
@@ -142,7 +146,7 @@
     </div>
   </div>
 
-  <!-- CORE APPLICATION CONTAINER FRAMEWAY[cite: 7] -->
+  <!-- CORE APPLICATION CONTAINER FRAMEWAY[cite: 6] -->
   <div id="main-app-container" style="display: none">
 
     <div class="app-brand-header">
@@ -157,7 +161,7 @@
       <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
     </div>
 
-    <!-- TRACKER PANEL LAYOUT[cite: 7] -->
+    <!-- TRACKER PANEL LAYOUT[cite: 6] -->
     <div id="page-tracker" class="page active">
       <div class="header">
         <div class="input-row">
@@ -188,7 +192,7 @@
         </div>
       </div>
       
-      <!-- Sortable Boards Target Container[cite: 7] -->
+      <!-- Sortable Boards Target Container[cite: 6] -->
       <div id="tracker-boards-container">
         <div id="wrap-def">
           <div class="section-title">🛡️ Defense</div>
@@ -216,7 +220,7 @@
       </div>
     </div>
 
-    <!-- HISTORY PANEL LAYOUT[cite: 7] -->
+    <!-- HISTORY PANEL LAYOUT[cite: 6] -->
     <div id="page-history" class="page">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <h3 style="margin:0;font-size:1rem">Game Logs Matrix</h3>
@@ -235,7 +239,7 @@
       </div>
     </div>
 
-    <!-- SETTINGS PANEL LAYOUT[cite: 7] -->
+    <!-- SETTINGS PANEL LAYOUT[cite: 6] -->
     <div id="page-settings" class="page">
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
@@ -261,105 +265,637 @@
       </div>
     </div>
 
-    <!-- FULLY RESTORED DOCUMENTATION HELP TAB PANEL[cite: 7] -->
+    <!-- HELP DOCUMENTATION TAB PANEL[cite: 6] -->
     <div id="page-help" class="page">
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
-        <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
-        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
+        <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App[cite: 6]</h3>
+        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:[cite: 6]</p>
         <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
-          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
-          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>[cite: 6]
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.[cite: 6]
         </div>
       </div>
 
       <div class="individual-disclaimer">
-        <strong>ℹ️ Individual Player Tracker</strong><br>
-        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
+        <strong>ℹ️ Individual Player Tracker</strong><br>[cite: 6]
+        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).[cite: 6]
       </div>
 
       <div class="header">
-        <h3 style="margin:0 0 5px 0;">App Documentation</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
+        <h3 style="margin:0 0 5px 0;">App Documentation[cite: 6]</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>[cite: 6]
       </div>
 
-      <div class="section-title">📱 App Workflow</div>
+      <div class="section-title">📱 App Workflow[cite: 6]</div>
       <div class="help-card">
         <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
-          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.[cite: 6]
         </div>
         <ul>
-          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.</li>
-          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
-          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
-          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.</li>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.[cite: 6]</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.[cite: 6]</li>
+          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.[cite: 6]</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.[cite: 6]</li>
         </ul>
       </div>
 
-      <div class="section-title">📈 Advanced Metrics</div>
+      <div class="section-title">📈 Advanced Metrics[cite: 6]</div>
       <div class="help-card">
         <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion counters.<br><br>
-        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.<br><br>
-        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.<br><br>
-        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.<br><br>
-        <strong>A/TO</strong>: Assist to Turnover Ratio.
+        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.[cite: 6]<br><br>
+        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.[cite: 6]<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.[cite: 6]<br><br>
+        <strong>A/TO</strong>: Assist to Turnover Ratio.[cite: 6]
       </div>
 
       <div class="brand-logo-container">
-        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">
+        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">[cite: 6]
       </div>
 
-      <!-- Support Card -->
       <div class="support-card">
-        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support LaVenice Labs</strong>
+        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support LaVenice Labs</strong>[cite: 6]
         <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
-          If you purchased this tracker on Etsy, thank you so much for your support!
+          If you purchased this tracker on Etsy, thank you so much for your support![cite: 6]
         </p>
         <a href="https://venmo.com/u/LaveniceLabs" target="_blank" class="support-btn">
-          ☕ Tip on Venmo (@LaveniceLabs)
+          ☕ Tip on Venmo (@LaveniceLabs)[cite: 6]
         </a>
       </div>
     </div>
 
-    <!-- DYNAMIC REPORT LOGS EDIT OVERLAY MODAL DIALOG CONTAINER[cite: 7] -->
+    <!-- BOX SCORE EDIT MODAL[cite: 6] -->
     <div id="editModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 500px;">
-        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>
+        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>[cite: 6]
         
-        <input type="hidden" id="editRow">
+        <input type="hidden" id="editRow">[cite: 6]
         
         <div class="edit-grid">
-          <div><label>Game Date</label><input type="date" id="editDate"></div>
-          <div><label>Opponent</label><input type="text" id="editOpp"></div>
+          <div><label>Game Date</label><input type="date" id="editDate"></div>[cite: 6]
+          <div><label>Opponent</label><input type="text" id="editOpp"></div>[cite: 6]
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>[cite: 6]
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
         </div>
 
-        <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>
-        <!-- Dynamic Form Target Container -->
+        <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>[cite: 6]
+        <!-- Dynamic Form Target Container[cite: 6] -->
         <div id="dynamic-modal-stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
 
         <div style="margin-bottom:15px;">
-          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings Payout ($)</label>
-          <input type="number" step="0.01" id="eMoney" style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">
+          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings Payout ($)</label>[cite: 6]
+          <input type="number" step="0.01" id="eMoney" style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">[cite: 6]
         </div>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button onclick="closeEdit()" style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>
-          <button onclick="saveEdit()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Changes</button>
+          <button onclick="closeEdit()" style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>[cite: 6]
+          <button onclick="saveEdit()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Changes</button>[cite: 6]
         </div>
       </div>
     </div>
 
   </div>
+
+  <!-- EMBEDDED JAVASCRIPT CONTROLLER NATIVE TO WEB APP TEMPLATES -->
+  <script>
+    const bballDb = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+
+    let curData = null;
+    let updateTimer = null;
+    let isHome = true;
+    let curWL = 'W';
+    let histData = [];
+    let pendingSync = false;
+    let currentFamilyId = 'default_family';
+    let isAppInitialized = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const dateInput = document.getElementById('gameDate');
+      if (dateInput) {
+        dateInput.value = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      }
+
+      const passwordInput = document.getElementById('auth-password');
+      const emailInput = document.getElementById('auth-email');
+      
+      const handleEnterKey = (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleAuthAction('login');
+        }
+      };
+
+      if (passwordInput) passwordInput.addEventListener('keydown', handleEnterKey);
+      if (emailInput) emailInput.addEventListener('keydown', handleEnterKey);
+    });
+
+    bballDb.auth.onAuthStateChange(async (event, session) => {
+      if (isAppInitialized) return; 
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+        if (session) {
+          isAppInitialized = true;
+          updateStatus("Session active. Fetching profile...", false);
+          await fetchUserProfile(session.user.id);
+        }
+      }
+    });
+
+    function updateStatus(msg, isError) {
+      const statusEl = document.getElementById('auth-status');
+      if (statusEl) {
+        statusEl.innerText = msg;
+        statusEl.style.color = isError ? '#e74c3c' : '#2980b9';
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('auth-password');
+      const toggleBtn = document.getElementById('toggle-password-btn');
+      if (!passwordInput || !toggleBtn) return;
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.innerText = '🙈'; 
+      } else {
+        passwordInput.type = 'password';
+        toggleBtn.innerText = '👁️'; 
+      }
+    }
+
+    function smartRegister() {
+      const accessKeyInput = document.getElementById('auth-access-key');
+      if (accessKeyInput) {
+        if (accessKeyInput.style.display === 'none' || accessKeyInput.style.display === '') {
+          accessKeyInput.style.display = 'block';
+          updateStatus("Enter email, password, and registration Access Key.", false);
+        } else {
+          handleAuthAction('register');
+        }
+      }
+    }
+
+    async function handleAuthAction(actionType) {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const accessKey = document.getElementById('auth-access-key').value.trim();
+
+      if (!email || !password) {
+        updateStatus("Please enter both Email and Password.", true);
+        return;
+      }
+
+      try {
+        if (actionType === 'login') {
+          updateStatus("Signing in...", false);
+          const { data, error } = await bballDb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        } else if (actionType === 'register') {
+          if (!accessKey) {
+            updateStatus("Access Key required for registration verification.", true);
+            return;
+          }
+          updateStatus("Validating access and registering...", false);
+          
+          const { data, error } = await bballDb.auth.signUp({
+            email,
+            password,
+            options: { data: { registration_key: accessKey } }
+          });
+          if (error) throw error;
+          updateStatus("Registration successful! Check your email for verification.", false);
+        }
+      } catch (err) {
+        console.error(err);
+        updateStatus(err.message, true);
+      }
+    }
+
+    async function fetchUserProfile(userId) {
+      try {
+        let { data: profile, error } = await bballDb
+          .from('profiles') 
+          .select('family_id')
+          .eq('user_id', userId) 
+          .maybeSingle();
+
+        if (!error && profile) currentFamilyId = profile.family_id;
+        await loadInitialApplicationState();
+      } catch (err) {
+        await loadInitialApplicationState(); 
+      }
+    }
+
+    async function loadInitialApplicationState() {
+      try {
+        let { data: configs, error } = await bballDb
+          .from("user_metric_settings")
+          .select(`
+            visible, custom_price,
+            global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme, formula)
+          `)
+          .eq("family_id", currentFamilyId)
+          .eq("global_metric_templates.app_type", "basketball:solo"); 
+
+        if (error) throw error;
+
+        configs.sort((a, b) => a.global_metric_templates.report_sort_order - b.global_metric_templates.report_sort_order);
+
+        const formattedStats = configs.map((c) => ({
+          name: c.global_metric_templates.stat_name,
+          price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
+          count: 0,
+          visible: c.visible,
+          row: c.global_metric_templates.id, 
+          section: c.global_metric_templates.section,
+          isCounter: c.global_metric_templates.is_counter,
+          reportGroup: c.global_metric_templates.report_group,
+          colorTheme: c.global_metric_templates.color_theme,
+          formula: c.global_metric_templates.formula
+        }));
+
+        curData = {
+          opp: "", su: "", st: "", loc: true, res: "W", pm: "", tm: 32,
+          seasons: ["Season 1"], stats: formattedStats
+        };
+
+        render(curData);
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('main-app-container').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function render(d) {
+      curData = d;
+      document.getElementById('opp').value = d.opp || "";
+      setLoc(d.loc); setWL(d.res);
+      document.getElementById('scoreUs').value = d.su || "";
+      document.getElementById('scoreThem').value = d.st || "";
+      document.getElementById('pMin').value = d.pm || "";
+      document.getElementById('tMin').value = d.tm || "32";
+      
+      const dl = document.getElementById('seasonList');
+      if (dl) dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
+      if (!document.getElementById('season').value && d.seasons.length > 0) {
+        document.getElementById('season').value = d.seasons[d.seasons.length - 1];
+      }
+
+      document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
+      document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
+      document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
+
+      const settingsContainer = document.getElementById('settings-list');
+      if (settingsContainer) {
+        settingsContainer.innerHTML = d.stats.map(s => `
+          <div class="toggle-row">
+            <span style="font-weight:bold; color:${s.colorTheme};">${s.name}</span>
+            <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
+          </div>`).join('');
+      }
+      
+      recalcTotal();
+      applyLayoutOrder();
+    }
+
+    function rowHTML(s) {
+      const isTeam = s.section === 'team';
+      const moneyHTML = isTeam ? '' : `
+        <div class="t-money">
+          <div class="t-price" style="color:${s.colorTheme}; font-weight:bold;" id="price-${s.row}">$${s.price.toFixed(2)} ea</div>
+          <span class="t-sub" id="sub-${s.row}">$${(s.count * s.price).toFixed(2)}</span>
+        </div>`;
+
+      return `
+        <div class="t-row" style="border-left: 4px solid ${s.colorTheme};">
+          <div class="t-controls">
+            <button class="btn-c btn-m" onclick="tally(${s.row},-1)">-</button>
+            <div class="t-count" id="c-${s.row}">${s.count}</div>
+            <button class="btn-c btn-p" onclick="tally(${s.row},1)">+</button>
+          </div>
+          <div class="t-stat" style="font-weight:500;">${s.name}</div>
+          ${moneyHTML}
+        </div>`;
+    }
+
+    async function loadHistory() {
+      const historyBody = document.getElementById('history-body');
+      if (historyBody) historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
+      
+      try {
+        let { data: games, error } = await bballDb
+          .from("game_logs") 
+          .select(`
+            id, game_date, season, opponent, location, result, score_us, score_them,
+            player_minutes, team_minutes, total_payout, is_deleted,
+            game_stat_values ( template_id, stat_value )
+          `)
+          .eq("family_id", currentFamilyId)
+          .order("game_date", { ascending: false });
+
+        if (error) throw error;
+
+        histData = (games || []).map(g => {
+          const statsMap = {};
+          (g.game_stat_values || []).forEach(sv => { statsMap[sv.template_id] = sv.stat_value; });
+          return {
+            sheetRow: g.id, date: g.game_date, season: g.season || "Season 1", opp: g.opponent,
+            loc: g.location === "Home" ? "H" : "A", res: g.result, su: g.score_us, st: g.score_them,
+            min: g.player_minutes, tmin: g.team_minutes, money: Number(g.total_payout || 0),
+            isDel: g.is_deleted || false, rawStats: statsMap 
+          };
+        });
+
+        const seasons = [...new Set(histData.map(x => x.season))];
+        const filterSelect = document.getElementById('seasonFilter');
+        if (filterSelect) {
+          filterSelect.innerHTML = seasons.map(x => `<option value="${x}">${x}</option>`).join('');
+          if (seasons.length > 0) filterSelect.value = seasons[seasons.length - 1];
+        }
+        renderHistory();
+      } catch (err) {
+        if (historyBody) historyBody.innerHTML = `<tr><td colspan="40" style="color:red;text-align:center;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderHistory() {
+      const body = document.getElementById('history-body');
+      const head = document.getElementById('history-head');
+      if (!body || !head) return;
+
+      const showDel = document.getElementById('showDel')?.checked || false;
+      const activeSeason = document.getElementById('seasonFilter')?.value;
+
+      const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
+      const visibleTemplates = curData.stats.filter(s => s.visible);
+      
+      const orderedGroups = [];
+      visibleTemplates.forEach(s => {
+        if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
+      });
+
+      // FIXED & PROVEN ALIGNMENT: 8 Full columns of universal space to snap color banners beautifully
+      let topRowHTML = `
+        <tr style="background:#2c3e50; color:white;">
+          <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
+          <th colspan="8" style="text-align:center; background:#2980b9; padding:8px;">Universal Match Data</th>`;
+          
+      let subRowHTML = `
+        <tr style="background:#f2f4f4; font-size:0.85rem; color:#2c3e50;">
+          <th class="sticky-2" style="background:#f2f4f4;">Date</th>
+          <th>Opponent</th>
+          <th>Loc</th>
+          <th>Res</th>
+          <th>Our</th>
+          <th>Opp</th>
+          <th>MIN</th>`;
+
+      orderedGroups.forEach(groupName => {
+        const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
+        if (groupStats.length > 0) {
+          topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupStats[0].colorTheme}; border-left:1px solid #fff; padding:8px;">${groupName}</th>`;
+          groupStats.forEach(s => {
+            subRowHTML += `<th style="color:${s.colorTheme}; border-bottom:2px solid ${s.colorTheme}; font-weight:600; padding:6px; min-width:65px;">${s.name}</th>`;
+          });
+        }
+      });
+
+      topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
+      head.innerHTML = topRowHTML + subRowHTML;
+
+      if (filtered.length === 0) {
+        body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No logs found.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = filtered.map(g => {
+        let statsColumnsHTML = '';
+        const histStatsInstance = curData.stats.map(s => ({
+          name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
+        }));
+
+        histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
+          let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
+          histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
+          equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
+          try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
+        });
+
+        orderedGroups.forEach(groupName => {
+          visibleTemplates.filter(s => s.reportGroup === groupName).forEach(s => {
+            const match = histStatsInstance.find(x => x.name === s.name);
+            let displayVal = match ? match.count : 0;
+            let formattedStr = s.section === 'advanced' ? displayVal.toFixed(1) + (s.name.includes('%') ? '%' : '') : displayVal;
+            statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff; border-left:1px solid #f2f4f4;">${formattedStr}</td>`;
+          });
+        });
+
+        return `
+          <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
+            <td style="padding:4px;" class="sticky-1"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
+            <td style="font-weight:bold; white-space:nowrap; padding:8px;" class="sticky-2">${g.date}</td>
+            <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
+            <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
+            <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
+            <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
+            ${statsColumnsHTML}
+            <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function saveGame() {
+      const button = document.querySelector('.save-btn');
+      if (button) { button.disabled = true; button.innerText = "SAVING..."; }
+
+      try {
+        const getI = (id) => document.getElementById(id)?.value || "";
+        const totalPayout = curData.stats.filter(s => s.formula === null).reduce((sum, x) => sum + (x.count * x.price), 0);
+
+        const logHeader = {
+          family_id: currentFamilyId, game_date: getI('gameDate'), season: getI('season') || "Season 1",
+          opponent: getI('opp') || "Unknown Opponent", location: isHome ? "Home" : "Away", result: curWL,
+          score_us: parseInt(getI('scoreUs')) || 0, score_them: parseInt(getI('scoreThem')) || 0,
+          player_minutes: parseInt(getI('pMin')) || 0, team_minutes: parseInt(getI('tMin')) || 32,
+          total_payout: totalPayout, is_deleted: false
+        };
+
+        const { data: savedHeader, error: headerError } = await bballDb
+          .from('game_logs').insert([logHeader]).select('id').single();
+
+        if (headerError) throw headerError;
+
+        const valuesPayload = curData.stats.filter(s => s.formula === null).map(s => ({
+          game_log_id: savedHeader.id, template_id: s.row, stat_value: s.count
+        }));
+
+        const { error: valuesError } = await bballDb.from('game_stat_values').insert(valuesPayload);
+        if (valuesError) throw valuesError;
+
+        alert("Box score logged successfully!");
+        resetTracker();
+        await loadHistory();
+      } catch (err) {
+        alert("Failed to save box score: " + err.message);
+      } finally {
+        if (button) { button.disabled = false; button.innerText = "SAVE"; }
+      }
+    }
+
+    function openModal(logId) {
+      const g = histData.find(x => x.sheetRow === logId);
+      if (!g) return;
+
+      document.getElementById('editRow').value = g.sheetRow;
+      document.getElementById('editDate').value = g.date;
+      document.getElementById('editOpp').value = g.opp;
+      document.getElementById('eScoreUs').value = g.su;
+      document.getElementById('eScoreThem').value = g.st;
+      document.getElementById('editWL').value = g.res;
+      document.getElementById('editLoc').value = g.loc === 'H' ? 'Home' : 'Away';
+      document.getElementById('eMin').value = g.min;
+      document.getElementById('eTMin').value = g.tmin;
+      document.getElementById('eMoney').value = g.money.toFixed(2);
+
+      const modalGrid = document.getElementById('dynamic-modal-stats-grid');
+      if (modalGrid) {
+        const rawCountersOnly = curData.stats.filter(s => s.formula === null);
+        modalGrid.innerHTML = rawCountersOnly.map(s => {
+          const currentValue = g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0;
+          return `
+            <div style="display:flex; flex-direction:column;">
+              <label style="font-size:0.75rem; font-weight:600; color:${s.colorTheme}; margin-bottom:2px;">${s.name}</label>
+              <input type="number" id="modal-input-${s.row}" value="${currentValue}" oninput="recalcEditMoney()" style="padding:6px; border:1px solid #ccc; border-radius:4px;">
+            </div>`;
+        }).join('');
+      }
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEdit() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEdit() {
+      const logId = document.getElementById('editRow').value;
+      const rawCountersOnly = curData.stats.filter(s => s.formula === null);
+
+      const statPayload = {};
+      rawCountersOnly.forEach(s => {
+        const targetInput = document.getElementById(`modal-input-${s.row}`);
+        if (targetInput) {
+          statPayload[s.row] = parseInt(targetInput.value) || 0;
+        }
+      });
+
+      try {
+        const { error } = await bballDb.rpc('update_game_log_with_stats', {
+          p_log_id: logId,
+          p_game_date: document.getElementById('editDate').value,
+          p_opponent: document.getElementById('editOpp').value,
+          p_location: document.getElementById('editLoc').value,
+          p_result: document.getElementById('editWL').value,
+          p_score_us: parseInt(document.getElementById('eScoreUs').value) || 0,
+          p_score_them: parseInt(document.getElementById('eScoreThem').value) || 0,
+          p_player_minutes: parseInt(document.getElementById('eMin').value) || 0,
+          p_team_minutes: parseInt(document.getElementById('eTMin').value) || 32,
+          p_total_payout: parseFloat(document.getElementById('eMoney').value) || 0.00,
+          p_stat_payload: statPayload
+        });
+
+        if (error) throw error;
+        closeEdit();
+        await loadHistory();
+      } catch (err) {
+        alert("Error updating database logs: " + err.message);
+      }
+    }
+
+    function recalcEditMoney() {
+      const rawCountersOnly = curData.stats.filter(s => s.formula === null);
+      let newTotal = 0;
+      
+      rawCountersOnly.forEach(s => {
+        const targetInput = document.getElementById(`modal-input-${s.row}`);
+        if (targetInput) {
+          let val = parseFloat(targetInput.value) || 0;
+          newTotal += val * s.price;
+        }
+      });
+      document.getElementById('eMoney').value = newTotal.toFixed(2);
+    }
+
+    function resetTracker() {
+      if (!curData) return;
+      curData.stats.forEach(x => x.count = 0);
+      ['opp', 'scoreUs', 'scoreThem', 'pMin'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      render(curData);
+    }
+
+    function switchTab(t) {
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetPage = document.getElementById('page-' + t);
+      const targetTab = document.getElementById('tab-' + t);
+      
+      if (targetPage) targetPage.style.display = 'block';
+      if (targetTab) targetTab.classList.add('active');
+      if (t === 'history') loadHistory();
+    }
+
+    function autoWL(){
+      const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
+      if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+    }
+
+    function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
+    function setWL(w){
+      curWL=w;
+      ['btnWin','btnTie','btnLoss'].forEach(b => document.getElementById(b)?.classList.remove('active'));
+      const targetId = w === 'W' ? 'btnWin' : (w === 'T' ? 'btnTie' : 'btnLoss');
+      document.getElementById(targetId)?.classList.add('active');
+    }
+
+    function applyLayoutOrder() {
+      const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
+      const container = document.getElementById('tracker-boards-container');
+      if (!container) return;
+      order.forEach(id => {
+        const wrapper = document.getElementById('wrap-' + id);
+        if (wrapper) container.appendChild(wrapper);
+      });
+    }
+
+    function updateDefaultTMin(val) {
+      document.getElementById('tMin').value = val;
+    }
+
+    function updateLayoutOrder() {
+      const order = document.getElementById('layoutOrder').value.split(',');
+      localStorage.setItem('hoopStatsLayout', JSON.stringify(order));
+      applyLayoutOrder();
+    }
+
+    function toggleVis(row, val) {
+      const s = curData.stats.find(x => x.row === row);
+      if (s) s.visible = val;
+      render(curData);
+    }
+  </script>
 </body>
 </html>
