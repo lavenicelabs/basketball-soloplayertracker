@@ -94,7 +94,7 @@
       z-index: 10;
     }
     
-    /* Fixed Dynamic Header Sticky Offsets */
+    /* Sticky Column System Layout Styles */
     .sticky-1 { position: sticky; left: 0; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
     .sticky-2 { position: sticky; left: 60px; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
     
@@ -120,12 +120,10 @@
     .support-btn { display: inline-block; background: #008cff; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,140,255,0.3); transition: background 0.2s; }
   </style>
 
-  <!-- Supabase Production Context Client Framework -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <!-- AUTHENTICATION GATEWAY PANEL OVERLAY[cite: 6] -->
   <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
     <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
       <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
@@ -146,7 +144,6 @@
     </div>
   </div>
 
-  <!-- CORE APPLICATION CONTAINER FRAMEWAY[cite: 6] -->
   <div id="main-app-container" style="display: none">
 
     <div class="app-brand-header">
@@ -161,7 +158,6 @@
       <button class="nav-btn" id="tab-help" onclick="switchTab('help')">Help</button>
     </div>
 
-    <!-- TRACKER PANEL LAYOUT[cite: 6] -->
     <div id="page-tracker" class="page active">
       <div class="header">
         <div class="input-row">
@@ -192,7 +188,6 @@
         </div>
       </div>
       
-      <!-- Sortable Boards Target Container[cite: 6] -->
       <div id="tracker-boards-container">
         <div id="wrap-def">
           <div class="section-title">🛡️ Defense</div>
@@ -220,7 +215,6 @@
       </div>
     </div>
 
-    <!-- HISTORY PANEL LAYOUT[cite: 6] -->
     <div id="page-history" class="page">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <h3 style="margin:0;font-size:1rem">Game Logs Matrix</h3>
@@ -239,7 +233,6 @@
       </div>
     </div>
 
-    <!-- SETTINGS PANEL LAYOUT[cite: 6] -->
     <div id="page-settings" class="page">
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
@@ -265,108 +258,105 @@
       </div>
     </div>
 
-    <!-- HELP DOCUMENTATION TAB PANEL[cite: 6] -->
     <div id="page-help" class="page">
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
-        <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App[cite: 6]</h3>
-        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:[cite: 6]</p>
+        <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
+        <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
         <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
-          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>[cite: 6]
-          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.[cite: 6]
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
         </div>
       </div>
 
       <div class="individual-disclaimer">
-        <strong>ℹ️ Individual Player Tracker</strong><br>[cite: 6]
-        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).[cite: 6]
+        <strong>ℹ️ Individual Player Tracker</strong><br>
+        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
       </div>
 
       <div class="header">
-        <h3 style="margin:0 0 5px 0;">App Documentation[cite: 6]</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>[cite: 6]
+        <h3 style="margin:0 0 5px 0;">App Documentation</h3>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
       </div>
 
-      <div class="section-title">📱 App Workflow[cite: 6]</div>
+      <div class="section-title">📱 App Workflow</div>
       <div class="help-card">
         <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
-          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.[cite: 6]
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
         </div>
         <ul>
-          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.[cite: 6]</li>
-          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.[cite: 6]</li>
-          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.[cite: 6]</li>
-          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.[cite: 6]</li>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
+          <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.</li>
         </ul>
       </div>
 
-      <div class="section-title">📈 Advanced Metrics[cite: 6]</div>
+      <div class="section-title">📈 Advanced Metrics</div>
       <div class="help-card">
         <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion counters.<br><br>
-        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.[cite: 6]<br><br>
-        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.[cite: 6]<br><br>
-        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.[cite: 6]<br><br>
-        <strong>A/TO</strong>: Assist to Turnover Ratio.[cite: 6]
+        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.<br><br>
+        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.<br><br>
+        <strong>A/TO</strong>: Assist to Turnover Ratio.
       </div>
 
       <div class="brand-logo-container">
-        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">[cite: 6]
+        <img src="https://lh3.googleusercontent.com/d/1W8pjL3Ypd0M2EoP_xA2Il1i9U4nBDkya" alt="LaVenice Labs Logo">
       </div>
 
       <div class="support-card">
-        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support LaVenice Labs</strong>[cite: 6]
+        <strong style="color: #2980b9; font-size: 1.05rem;">💙 Support LaVenice Labs</strong>
         <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
-          If you purchased this tracker on Etsy, thank you so much for your support![cite: 6]
+          If you purchased this tracker on Etsy, thank you so much for your support!
         </p>
         <a href="https://venmo.com/u/LaveniceLabs" target="_blank" class="support-btn">
-          ☕ Tip on Venmo (@LaveniceLabs)[cite: 6]
+          ☕ Tip on Venmo (@LaveniceLabs)
         </a>
       </div>
     </div>
 
-    <!-- BOX SCORE EDIT MODAL[cite: 6] -->
     <div id="editModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 500px;">
-        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>[cite: 6]
+        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>
         
-        <input type="hidden" id="editRow">[cite: 6]
+        <input type="hidden" id="editRow">
         
         <div class="edit-grid">
-          <div><label>Game Date</label><input type="date" id="editDate"></div>[cite: 6]
-          <div><label>Opponent</label><input type="text" id="editOpp"></div>[cite: 6]
+          <div><label>Game Date</label><input type="date" id="editDate"></div>
+          <div><label>Opponent</label><input type="text" id="editOpp"></div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>[cite: 6]
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>[cite: 6]
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
         </div>
 
-        <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>[cite: 6]
-        <!-- Dynamic Form Target Container[cite: 6] -->
+        <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>
         <div id="dynamic-modal-stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
 
         <div style="margin-bottom:15px;">
-          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings Payout ($)</label>[cite: 6]
-          <input type="number" step="0.01" id="eMoney" style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">[cite: 6]
+          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings Payout ($)</label>
+          <input type="number" step="0.01" id="eMoney" style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">
         </div>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button onclick="closeEdit()" style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>[cite: 6]
-          <button onclick="saveEdit()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Changes</button>[cite: 6]
+          <button onclick="closeEdit()" style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>
+          <button onclick="saveEdit()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Changes</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- EMBEDDED JAVASCRIPT CONTROLLER NATIVE TO WEB APP TEMPLATES -->
   <script>
+    // Paste your live credentials here
     const bballDb = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
     let curData = null;
@@ -644,7 +634,7 @@
         if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
       });
 
-      // FIXED & PROVEN ALIGNMENT: 8 Full columns of universal space to snap color banners beautifully
+      // DYNAMIC SNAP METRICS: Span 8 full width dimensions to clear spacing markers
       let topRowHTML = `
         <tr style="background:#2c3e50; color:white;">
           <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
@@ -871,6 +861,7 @@
       document.getElementById(targetId)?.classList.add('active');
     }
 
+    // Dynamic relational execution map loop positions handlers
     function applyLayoutOrder() {
       const order = JSON.parse(localStorage.getItem('hoopStatsLayout')) || ['def', 'off', 'team'];
       const container = document.getElementById('tracker-boards-container');
@@ -885,6 +876,7 @@
       document.getElementById('tMin').value = val;
     }
 
+    // Layout configuration order tracker handles
     function updateLayoutOrder() {
       const order = document.getElementById('layoutOrder').value.split(',');
       localStorage.setItem('hoopStatsLayout', JSON.stringify(order));
@@ -895,6 +887,32 @@
       const s = curData.stats.find(x => x.row === row);
       if (s) s.visible = val;
       render(curData);
+    }
+
+    function tally(r, a) {
+      const s = curData.stats.find(x => x.row === r);
+      if (!s) return;
+      s.count = Math.max(0, s.count + a);
+      
+      if (a > 0) {
+        if (s.name.includes('🎯 2PT Made')) {
+          const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
+          if (attRow) attRow.count++; 
+        } else if (s.name.includes('🥅 FT Made')) {
+          const attRow = curData.stats.find(x => x.name.includes('🏀 FT Attempt'));
+          if (attRow) attRow.count++; 
+        } else if (s.name.includes('👌 3PT Made')) {
+          const attRow = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'));
+          if (attRow) attRow.count++; 
+        }
+      }
+      render(curData);
+    }
+
+    function recalcTotal() {
+      if (!curData) return;
+      let t = curData.stats.filter(s => s.formula === null).reduce((s, x) => s + (x.count * x.price), 0);
+      document.getElementById('totalVal').innerText = `$${t.toFixed(2)}`;
     }
   </script>
 </body>
