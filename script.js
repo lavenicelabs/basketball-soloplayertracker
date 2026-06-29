@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dateInput.value = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
   }
 
-  // RESTORED & PROTECTED: Auto-click Sign-In button when pressing Enter on password/email inputs
+  // Auto-click Sign-In button when pressing Enter on password/email inputs
   const passwordInput = document.getElementById('auth-password');
   const emailInput = document.getElementById('auth-email');
   
@@ -194,7 +194,7 @@ function render(d) {
     document.getElementById('season').value = d.seasons[d.seasons.length - 1];
   }
 
-  // FIXED: Strictly filter out advanced calculations from ever rendering on the logging panels
+  // Filter out calculations fields from rendering on standard tracker input panels
   document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
@@ -208,7 +208,16 @@ function render(d) {
       </div>`).join('');
   }
   
+  ['scoreUs', 'scoreThem', 'pMin', 'tMin', 'opp', 'season', 'gameDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.listenerAttached) {
+      el.addEventListener('input', () => checkAchievementsAndProtections());
+      el.dataset.listenerAttached = true;
+    }
+  });
+
   recalcTotal();
+  checkAchievementsAndProtections(); 
   applyLayoutOrder();
 }
 
@@ -233,7 +242,7 @@ function rowHTML(s) {
 }
 
 // ==========================================
-// DYNAMIC HISTORY LEDGER WITH GROUP COLORING
+// DYNAMIC HISTORY LEDGER ENGINE
 // ==========================================
 async function loadHistory() {
   const historyBody = document.getElementById('history-body');
@@ -285,12 +294,17 @@ function renderHistory() {
 
   const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
   const visibleTemplates = curData.stats.filter(s => s.visible);
-  const reportingGroups = [...new Set(visibleTemplates.map(s => s.reportGroup))];
+  
+  // Extract report groups in the exact order specified by your database weight identifiers
+  const orderedGroups = [];
+  visibleTemplates.forEach(s => {
+    if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
+  });
 
-  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle; padding:10px;">Action</th><th colspan="7" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
+  let topRowHTML = `<tr style="background:#2c3e50; color:white;"><th rowspan="2" style="vertical-align:middle; padding:8px;">Action</th><th colspan="7" style="text-align:center; background:#2980b9;">Universal Match Data</th>`;
   let subRowHTML = `<tr style="background:#f2f4f4; font-size:0.85rem;"><th>Date</th><th>Opponent</th><th>Loc</th><th>Res</th><th>Our</th><th>Opp</th><th>MIN</th>`;
 
-  reportingGroups.forEach(groupName => {
+  orderedGroups.forEach(groupName => {
     const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
     if (groupStats.length > 0) {
       topRowHTML += `<th colspan="${groupStats.length}" style="text-align:center; background:${groupStats[0].colorTheme}; border-left:1px solid #fff;">${groupName}</th>`;
@@ -300,11 +314,11 @@ function renderHistory() {
     }
   });
 
-  topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center;">Payout</th></tr><tr>`;
+  topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
   head.innerHTML = topRowHTML + subRowHTML;
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No box score logs found.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No logs found.</td></tr>`;
     return;
   }
 
@@ -314,7 +328,7 @@ function renderHistory() {
       name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
     }));
 
-    // Evaluate equations dynamically for historical reporting rows
+    // Evaluate live dynamic templates calculations for historical rows
     histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
       let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
       histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
@@ -322,7 +336,7 @@ function renderHistory() {
       try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
     });
 
-    reportingGroups.forEach(groupName => {
+    orderedGroups.forEach(groupName => {
       visibleTemplates.filter(s => s.reportGroup === groupName).forEach(s => {
         const match = histStatsInstance.find(x => x.name === s.name);
         let displayVal = match ? match.count : 0;
@@ -333,7 +347,7 @@ function renderHistory() {
 
     return `
       <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
-        <td style="padding:6px;"><button class="reset-btn" style="padding:4px 8px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
+        <td style="padding:4px;"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
         <td style="font-weight:bold; white-space:nowrap; padding:8px;">${g.date}</td>
         <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
         <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
@@ -346,7 +360,7 @@ function renderHistory() {
 }
 
 // ==========================================
-// SAVE & TRANSACTION LEDGER SYNC CONTROLLERS
+// DATA WRITE BACK ENGINE TRANSACTION HANDLERS
 // ==========================================
 async function saveGame() {
   const button = document.querySelector('.save-btn');
@@ -354,7 +368,6 @@ async function saveGame() {
 
   try {
     const getI = (id) => document.getElementById(id)?.value || "";
-    // FIXED: Calculate total payouts purely based on non-formula template entries
     const totalPayout = curData.stats.filter(s => s.formula === null).reduce((sum, x) => sum + (x.count * x.price), 0);
 
     const logHeader = {
@@ -388,7 +401,7 @@ async function saveGame() {
 }
 
 // ==========================================
-// RESTORED: NATIVE MODAL HISTORIC EDITING
+// DYNAMIC NATIVE EDIT MODAL BUILDER LOOPS
 // ==========================================
 function openModal(logId) {
   const g = histData.find(x => x.sheetRow === logId);
@@ -405,20 +418,19 @@ function openModal(logId) {
   document.getElementById('eTMin').value = g.tmin;
   document.getElementById('eMoney').value = g.money.toFixed(2);
 
-  const inputMap = {
-    '🏀 Rebounds': 'eReb', '🧤 Steals': 'eStl', '🖐️ Deflections': 'eDef', '⛹️ Jump Balls': 'eJmp',
-    '🚫 Blocks': 'eBlk', '🤚 Contested': 'eCont', '🛡️ Hard Screen': 'eScrn', '🛑 Charges Taken': 'eChg',
-    '🎯 2PT Made': 'eP2m', '🏀 2PT Attempt': 'eP2a', '🥅 FT Made': 'eFtm', '🏀 FT Attempt': 'eFta',
-    '👌 3PT Made': 'eP3m', '🏀 3PT Attempt': 'eP3a', '🎁 Assists': 'eAst', '🤦 Turnovers': 'eTo',
-    '👥 Team FGA': 'eTfga', '👥 Team FTA': 'eTfta', '👥 Team TO': 'eTto'
-  };
-
-  curData.stats.forEach(s => {
-    const inputId = inputMap[s.name];
-    if (inputId) {
-      document.getElementById(inputId).value = g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0;
-    }
-  });
+  // FIXED: Build the grid form dynamically to support any sport layout and prevent crash triggers
+  const modalGrid = document.getElementById('dynamic-modal-stats-grid');
+  if (modalGrid) {
+    const rawCountersOnly = curData.stats.filter(s => s.formula === null);
+    modalGrid.innerHTML = rawCountersOnly.map(s => {
+      const currentValue = g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0;
+      return `
+        <div style="display:flex; flex-direction:column;">
+          <label style="font-size:0.75rem; font-weight:600; color:${s.colorTheme}; margin-bottom:2px;">${s.name}</label>
+          <input type="number" id="modal-input-${s.row}" value="${currentValue}" oninput="recalcEditMoney()" style="padding:6px; border:1px solid #ccc; border-radius:4px;">
+        </div>`;
+    }).join('');
+  }
 
   document.getElementById('editModal').style.display = 'flex';
 }
@@ -429,19 +441,13 @@ function closeEdit() {
 
 async function saveEdit() {
   const logId = document.getElementById('editRow').value;
-  const inputMap = {
-    '🏀 Rebounds': 'eReb', '🧤 Steals': 'eStl', '🖐️ Deflections': 'eDef', '⛹️ Jump Balls': 'eJmp',
-    '🚫 Blocks': 'eBlk', '🤚 Contested': 'eCont', '🛡️ Hard Screen': 'eScrn', '🛑 Charges Taken': 'eChg',
-    '🎯 2PT Made': 'eP2m', '🏀 2PT Attempt': 'eP2a', '🥅 FT Made': 'eFtm', '🏀 FT Attempt': 'eFta',
-    '👌 3PT Made': 'eP3m', '🏀 3PT Attempt': 'eP3a', '🎁 Assists': 'eAst', '🤦 Turnovers': 'eTo',
-    '👥 Team FGA': 'eTfga', '👥 Team FTA': 'eTfta', '👥 Team TO': 'eTto'
-  };
+  const rawCountersOnly = curData.stats.filter(s => s.formula === null);
 
   const statPayload = {};
-  curData.stats.forEach(s => {
-    const inputId = inputMap[s.name];
-    if (inputId) {
-      statPayload[s.row] = parseInt(document.getElementById(inputId).value) || 0;
+  rawCountersOnly.forEach(s => {
+    const targetInput = document.getElementById(`modal-input-${s.row}`);
+    if (targetInput) {
+      statPayload[s.row] = parseInt(targetInput.value) || 0;
     }
   });
 
@@ -469,18 +475,13 @@ async function saveEdit() {
 }
 
 function recalcEditMoney() {
-  const inputMap = {
-    '🏀 Rebounds': 'eReb', '🧤 Steals': 'eStl', '🖐️ Deflections': 'eDef', '⛹️ Jump Balls': 'eJmp',
-    '🚫 Blocks': 'eBlk', '🤚 Contested': 'eCont', '🛡️ Hard Screen': 'eScrn', '🛑 Charges Taken': 'eChg',
-    '🎯 2PT Made': 'eP2m', '🏀 2PT Attempt': 'eP2a', '🥅 FT Made': 'eFtm', '🏀 FT Attempt': 'eFta',
-    '👌 3PT Made': 'eP3m', '🏀 3PT Attempt': 'eP3a', '🎁 Assists': 'eAst', '🤦 Turnovers': 'eTo'
-  };
-  
+  const rawCountersOnly = curData.stats.filter(s => s.formula === null);
   let newTotal = 0;
-  curData.stats.forEach(s => {
-    const inputId = inputMap[s.name];
-    if (inputId) {
-      let val = parseFloat(document.getElementById(inputId).value) || 0;
+  
+  rawCountersOnly.forEach(s => {
+    const targetInput = document.getElementById(`modal-input-${s.row}`);
+    if (targetInput) {
+      let val = parseFloat(targetInput.value) || 0;
       newTotal += val * s.price;
     }
   });
@@ -506,7 +507,6 @@ function switchTab(t) {
   
   if (targetPage) targetPage.style.display = 'block';
   if (targetTab) targetTab.classList.add('active');
-  
   if (t === 'history') loadHistory();
 }
 
@@ -531,6 +531,87 @@ function applyLayoutOrder() {
     const wrapper = document.getElementById('wrap-' + id);
     if (wrapper) container.appendChild(wrapper);
   });
+}
+
+function updateDefaultTMin(val) {
+  document.getElementById('tMin').value = val;
+}
+
+function updateLayoutOrder() {
+  const order = document.getElementById('layoutOrder').value.split(',');
+  localStorage.setItem('hoopStatsLayout', JSON.stringify(order));
+  applyLayoutOrder();
+}
+
+function toggleVis(row, val) {
+  const s = curData.stats.find(x => x.row === row);
+  if (s) s.visible = val;
+  render(curData);
+}
+
+function checkAchievementsAndProtections() {
+  if (!curData) return;
+  
+  const p2m = curData.stats.find(x => x.name.includes('🎯 2PT Made'))?.count || 0;
+  const p2a = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'))?.count || 0;
+  const p3m = curData.stats.find(x => x.name.includes('👌 3PT Made'))?.count || 0;
+  const p3a = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'))?.count || 0;
+  const ftm = curData.stats.find(x => x.name.includes('🥅 FT Made'))?.count || 0;
+  const fta = curData.stats.find(x => x.name.includes('🏀 FT Attempt'))?.count || 0;
+  
+  const rebounds = curData.stats.find(x => x.name.includes(' Rebounds'))?.count || 0;
+  const assists = curData.stats.find(x => x.name.includes('🎁 Assists'))?.count || 0;
+  const steals = curData.stats.find(x => x.name.includes('🧤 Steals'))?.count || 0;
+  const blocks = curData.stats.find(x => x.name.includes('🚫 Blocks'))?.count || 0;
+  const turnovers = curData.stats.find(x => x.name.includes('🤦 Turnovers'))?.count || 0;
+
+  const tfga = curData.stats.find(x => x.name.includes('👥 Team FGA'))?.count || 0;
+  const tfta = curData.stats.find(x => x.name.includes('👥 Team FTA'))?.count || 0;
+  const tto = curData.stats.find(x => x.name.includes('👥 Team TO'))?.count || 0;
+
+  const pMin = parseInt(document.getElementById('pMin')?.value) || 0;
+  const tMin = parseInt(document.getElementById('tMin')) || 32;
+  const fga = p2a + p3a;
+
+  let warnings = [];
+  if (p2m > p2a) warnings.push("⚠️ 2PT Made exceeds Attempts.");
+  if (p3m > p3a) warnings.push("⚠️ 3PT Made exceeds Attempts.");
+  if (ftm > fta) warnings.push("⚠️ FT Made exceeds Attempts.");
+  if (tfga > 0 && fga > tfga) warnings.push("⚠️ Player FGA exceeds Team FGA.");
+  if (tfta > 0 && fta > tfta) warnings.push("⚠️ Player FTA exceeds Team FTA.");
+  if (tto > 0 && turnovers > tto) warnings.push("⚠️ Player Turnovers exceed Team Turnovers.");
+  if (tMin > 0 && pMin > tMin) warnings.push("⚠️ Player MIN exceeds Team Game MIN.");
+
+  const warnEl = document.getElementById('warnings-container');
+  if (warnEl) {
+    if (warnings.length > 0) {
+      warnEl.innerHTML = warnings.join('<br>');
+      warnEl.style.display = "block";
+    } else {
+      warnEl.style.display = "none";
+    }
+  }
+
+  const points = (p2m * 2) + (p3m * 3) + ftm;
+  const coreCategories = [points, rebounds, assists, steals, blocks];
+  const doubleDigitCount = coreCategories.filter(val => val >= 10).length;
+
+  let milestones = [];
+  if (doubleDigitCount >= 3) milestones.push("🔥 TRIPLE-DOUBLE COUPLING! 🔥");
+  else if (doubleDigitCount === 2) milestones.push("⚡ DOUBLE-DOUBLE RECORDED! ⚡");
+  
+  if (points >= 30) milestones.push("🏆 30+ POINT ELITE SCORING TIER! 🏆");
+  else if (points >= 20) milestones.push("🎯 20+ POINT SCORING TIER! 🎯");
+
+  const badgeEl = document.getElementById('achievements-container');
+  if (badgeEl) {
+    if (milestones.length > 0) {
+      badgeEl.innerHTML = milestones.join('<br>');
+      badgeEl.style.display = "block";
+    } else {
+      badgeEl.style.display = "none";
+    }
+  }
 }
 
 function recalcTotal() {
