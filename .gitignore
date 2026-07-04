@@ -1,0 +1,5 @@
+# Ignore local credentials and environment files
+config.js
+
+# Ignore local database dumps and setup text secrets
+supabase/supabase_docker_info.txt

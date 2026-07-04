@@ -1,0 +1,54 @@
+name: Deploy Multi-Sport Tracker to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Triggers the build automatically whenever you push code changes to main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Generate Production Config with Encrypted Secrets
+        run: |
+          echo "const ENV_CONFIG = {
+            local: {
+              SUPABASE_URL: 'http://127.0.0.1:54321',
+              SUPABASE_ANON_KEY: 'local-dummy-dev-key'
+            },
+            production: {
+              SUPABASE_URL: '${{ secrets.PROD_SUPABASE_URL }}',
+              SUPABASE_ANON_KEY: '${{ secrets.PROD_SUPABASE_ANON_KEY }}'
+            }
+          };
+          function getEnvironmentConfig() {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.');
+            if (isLocalhost) {
+              console.log('🔌 Connected to Local Docker Dev Environment Node');
+              return ENV_CONFIG.local;
+            }
+            return ENV_CONFIG.production;
+          }" > config.js
+
+      - name: Setup GitHub Pages Environment
+        uses: actions/configure-pages@v5
+
+      - name: Upload Deployment Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Publish Live to GitHub Pages Server
+        id: deployment
+        uses: actions/deploy-pages@v4
