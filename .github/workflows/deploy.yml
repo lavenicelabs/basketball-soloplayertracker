@@ -15,13 +15,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      # FIXED: Uses clear inline parsing to map your global Repository Secrets directly into the build environment matrix
+       Blanco Matrix:
       - name: Generate Production Config with Encrypted Secrets
+        env:
+          PROD_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          PROD_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
         run: |
           echo "const ENV_CONFIG = {
             local: {
@@ -29,8 +37,8 @@ jobs:
               SUPABASE_ANON_KEY: 'local-dummy-dev-key'
             },
             production: {
-              SUPABASE_URL: '${{ secrets.PROD_SUPABASE_URL }}',
-              SUPABASE_ANON_KEY: '${{ secrets.PROD_SUPABASE_ANON_KEY }}'
+              SUPABASE_URL: '$PROD_URL',
+              SUPABASE_ANON_KEY: '$PROD_KEY'
             }
           };
           function getEnvironmentConfig() {
