@@ -24,8 +24,6 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # FIXED: Uses clear inline parsing to map your global Repository Secrets directly into the build environment matrix
-       Blanco Matrix:
       - name: Generate Production Config with Encrypted Secrets
         env:
           PROD_URL: ${{ secrets.PROD_SUPABASE_URL }}
