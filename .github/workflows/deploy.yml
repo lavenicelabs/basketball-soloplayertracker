@@ -24,29 +24,14 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Generate Production Config with Encrypted Secrets
+      # FIXED: Directly targets index.html and swaps the placeholders inline during deployment build
+      - name: Inject Production Secrets Inline
         env:
           PROD_URL: ${{ secrets.PROD_SUPABASE_URL }}
           PROD_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
         run: |
-          echo "const ENV_CONFIG = {
-            local: {
-              SUPABASE_URL: 'http://127.0.0.1:54321',
-              SUPABASE_ANON_KEY: 'local-dummy-dev-key'
-            },
-            production: {
-              SUPABASE_URL: '$PROD_URL',
-              SUPABASE_ANON_KEY: '$PROD_KEY'
-            }
-          };
-          function getEnvironmentConfig() {
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.');
-            if (isLocalhost) {
-              console.log('🔌 Connected to Local Docker Dev Environment Node');
-              return ENV_CONFIG.local;
-            }
-            return ENV_CONFIG.production;
-          }" > config.js
+          sed -i "s|\$PROD_URL|$PROD_URL|g" index.html
+          sed -i "s|\$PROD_KEY|$PROD_KEY|g" index.html
 
       - name: Setup GitHub Pages Environment
         uses: actions/configure-pages@v5
