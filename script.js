@@ -1,5 +1,6 @@
-// Initialize Supabase Client Connection
-const bballDb = supabase.createClient('https://upgfhekhifolcqiudhzy.supabase.co', 'sb_publishable_ToMrCjvcOh8FkABvDwcm4g_jcCA_F-U');
+// ========================================================
+// CORE PLAYER DATA ENGINE (CONSUMES GLOBAL BBALLDB CLIENT)
+// ========================================================
 
 let curData = null;
 let updateTimer = null;
@@ -36,16 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // AUTHENTICATION CONTROLLER & INTERFACE LOGIC
 // ==========================================
-bballDb.auth.onAuthStateChange(async (event, session) => {
-  if (isAppInitialized) return;
-  if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
-    if (session) {
-      isAppInitialized = true;
-      updateStatus("Session active. Fetching profile...", false);
-      await fetchUserProfile(session.user.id);
+if (window.bballDb) {
+  window.bballDb.auth.onAuthStateChange(async (event, session) => {
+    if (isAppInitialized) return;
+    if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+      if (session) {
+        isAppInitialized = true;
+        updateStatus("Session active. Fetching profile...", false);
+        await fetchUserProfile(session.user.id);
+      }
     }
-  }
-});
+  });
+}
 
 function updateStatus(msg, isError) {
   const statusEl = document.getElementById('auth-status');
@@ -194,7 +197,6 @@ function render(d) {
     document.getElementById('season').value = d.seasons[d.seasons.length - 1];
   }
 
-  // Filter out calculations fields from rendering on standard tracker input panels
   document.getElementById('board-def').innerHTML = d.stats.filter(s => s.section === 'defense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-off').innerHTML = d.stats.filter(s => s.section === 'offense' && s.visible).map(rowHTML).join('');
   document.getElementById('board-team').innerHTML = d.stats.filter(s => s.section === 'team' && s.visible).map(rowHTML).join('');
@@ -295,14 +297,11 @@ function renderHistory() {
   const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
   const visibleTemplates = curData.stats.filter(s => s.visible);
   
-  // Extract report groups in the exact order specified by your database weight identifiers
   const orderedGroups = [];
   visibleTemplates.forEach(s => {
     if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
   });
 
-  // --- FULLY DYNAMIC DOUBLE-HEADER LAYOUT BUILDER ---
-  // FIXED: Changed colspan="7" to colspan="8" to completely account for the universal meta rows
   let topRowHTML = `
     <tr style="background:#2c3e50; color:white;">
       <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
@@ -318,7 +317,6 @@ function renderHistory() {
       <th>Opp</th>
       <th>MIN</th>`;
 
-  // 2. Append database-driven sport metrics groups and specific subheaders
   orderedGroups.forEach(groupName => {
     const groupStats = visibleTemplates.filter(s => s.reportGroup === groupName);
     if (groupStats.length > 0) {
@@ -329,7 +327,6 @@ function renderHistory() {
     }
   });
 
-  // 3. Close out the table headers assembly cleanly
   topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
   head.innerHTML = topRowHTML + subRowHTML;
 
@@ -338,14 +335,12 @@ function renderHistory() {
     return;
   }
 
-  // 4. Populate row data values grid cells matching header indexes
   body.innerHTML = filtered.map(g => {
     let statsColumnsHTML = '';
     const histStatsInstance = curData.stats.map(s => ({
       name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
     }));
 
-    // Evaluate live dynamic template formulas (e.g., 2PT%, 3PT%, eFG%, USG%)
     histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
       let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
       histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
@@ -362,7 +357,6 @@ function renderHistory() {
       });
     });
 
-    // FIXED: Adjusted the grid output to ensure values match the subheader columns correctly
     return `
       <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
         <td style="padding:4px;" class="sticky-1"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
@@ -375,51 +369,6 @@ function renderHistory() {
         <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
       </tr>`;
   }).join('');
-}
-
-topRowHTML += `<th rowspan="2" style="background:#27ae60; vertical-align:middle; text-align:center; padding:8px;">Payout</th></tr><tr>`;
-head.innerHTML = topRowHTML + subRowHTML;
-
-if (filtered.length === 0) {
-  body.innerHTML = `<tr><td colspan="50" style="padding:15px;text-align:center;color:#7f8c8d;">No logs found.</td></tr>`;
-  return;
-}
-
-body.innerHTML = filtered.map(g => {
-  let statsColumnsHTML = '';
-  const histStatsInstance = curData.stats.map(s => ({
-    name: s.name, count: g.rawStats[s.row] !== undefined ? g.rawStats[s.row] : 0, formula: s.formula
-  }));
-
-  // Evaluate live dynamic templates calculations for historical rows
-  histStatsInstance.filter(s => s.formula !== null).forEach(fStat => {
-    let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
-    histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
-    equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
-    try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch (e) { fStat.count = 0; }
-  });
-
-  orderedGroups.forEach(groupName => {
-    visibleTemplates.filter(s => s.reportGroup === groupName).forEach(s => {
-      const match = histStatsInstance.find(x => x.name === s.name);
-      let displayVal = match ? match.count : 0;
-      let formattedStr = s.section === 'advanced' ? displayVal.toFixed(1) + (s.name.includes('%') ? '%' : '') : displayVal;
-      statsColumnsHTML += `<td style="font-weight:500; text-align:center; background:#fff; border-left:1px solid #f2f4f4;">${formattedStr}</td>`;
-    });
-  });
-
-  return `
-      <tr style="border-bottom:1px solid #e5e8e8; font-size:0.9rem; text-align:center;">
-        <td style="padding:4px;"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
-        <td style="font-weight:bold; white-space:nowrap; padding:8px;">${g.date}</td>
-        <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
-        <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc === 'H' ? '#e8f4f8' : '#fcf3cf'}; color:${g.loc === 'H' ? '#2980b9' : '#f39c12'};">${g.loc}</span></td>
-        <td><span style="font-weight:bold; color:${g.res === 'W' ? '#27ae60' : (g.res === 'L' ? '#c0392b' : '#7f8c8d')}">${g.res}</span></td>
-        <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
-        ${statsColumnsHTML}
-        <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
-      </tr>`;
-}).join('');
 }
 
 // ==========================================
@@ -481,7 +430,6 @@ function openModal(logId) {
   document.getElementById('eTMin').value = g.tmin;
   document.getElementById('eMoney').value = g.money.toFixed(2);
 
-  // FIXED: Build the grid form dynamically to support any sport layout and prevent crash triggers
   const modalGrid = document.getElementById('dynamic-modal-stats-grid');
   if (modalGrid) {
     const rawCountersOnly = curData.stats.filter(s => s.formula === null);
@@ -573,6 +521,9 @@ function switchTab(t) {
   if (t === 'history') loadHistory();
 }
 
+// ==========================================
+// FORMULAS AND STATISTIC LOGIC ENGINE
+// ==========================================
 function autoWL() {
   const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
   if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
@@ -633,7 +584,7 @@ function checkAchievementsAndProtections() {
   const tto = curData.stats.find(x => x.name.includes('👥 Team TO'))?.count || 0;
 
   const pMin = parseInt(document.getElementById('pMin')?.value) || 0;
-  const tMin = parseInt(document.getElementById('tMin')) || 32;
+  const tMin = parseInt(document.getElementById('tMin')?.value) || 32;
   const fga = p2a + p3a;
 
   let warnings = [];
