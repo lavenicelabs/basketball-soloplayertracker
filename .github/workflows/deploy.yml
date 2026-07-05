@@ -12,9 +12,7 @@ permissions:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # REMOVED the "name: github-pages" restriction loop so it can read your global Repository Secrets cleanly
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
