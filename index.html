@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
@@ -11,19 +12,26 @@
   <link rel="icon" type="image/png" sizes="192x192" href="https://img.icons8.com/emoji/192/basketball-emoji.png">
 
   <style>
-    body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f9f7f5; margin: 0; padding: 0; color: #2c3e50; }
-    
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: #f9f7f5;
+      margin: 0;
+      padding: 0;
+      color: #2c3e50;
+    }
+
     /* Sleek Branding Header */
     .app-brand-header {
       background: #2c3e50;
       color: #ffffff;
       padding: 12px 14px 6px 14px;
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       position: sticky;
       top: 0;
       z-index: 110;
     }
+
     .app-title {
       font-size: 1.15rem;
       font-weight: 800;
@@ -33,6 +41,7 @@
       justify-content: center;
       gap: 8px;
     }
+
     .app-subtitle {
       font-size: 0.7rem;
       color: #bdc3c7;
@@ -42,106 +51,474 @@
       margin-top: 2px;
     }
 
-    .nav { display: flex; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 57px; z-index: 100; }
-    .nav-btn { flex: 1; padding: 12px 4px; background: none; border: none; color: #95a5a6; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-bottom: 3px solid transparent; }
-    .nav-btn.active { color: #2980b9; border-bottom: 3px solid #2980b9; }
-    .page { display: none; padding: 8px; margin: 0 auto; max-width: 1600px; }
-    .active { display: block; }
-    #page-tracker { max-width: 800px; }
-    .header { background: #fff; padding: 10px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .input-row { display: flex; gap: 8px; width: 100%; }
-    input, select { flex: 1; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; background: #fdfdfd; min-width: 0; }
-    .toggle-group { display: flex; flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
-    .seg-btn { flex: 1; padding: 8px; border: none; background: #f8f9fa; cursor: pointer; font-size: 0.75rem; font-weight: 800; color: #7f8c8d; }
-    .seg-btn.active { background: #2c3e50; color: white; }
-    .section-title { font-size: 0.85rem; font-weight: 800; color: #7f8c8d; margin: 12px 0 6px 4px; text-transform: uppercase; }
-    .tracker-list { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px; border-left: 4px solid #ccc; }
-    .list-def { border-left-color: #3498db; }
-    .list-off { border-left-color: #e67e22; }
-    .list-team { border-left-color: #9b59b6; }
-    .t-row { display: flex; align-items: center; border-bottom: 1px solid #f0f0f0; padding: 8px 12px; }
-    .t-controls { display: flex; align-items: center; gap: 6px; width: 110px; }
-    .btn-c { width: 32px; height: 32px; border: none; border-radius: 50%; font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; }
-    .btn-m { background: #f1f2f6; color: #747d8c; }
-    .btn-p { background: #eccc68; color: #2f3542; }
-    .t-count { font-size: 1.3rem; font-weight: 800; width: 28px; text-align: center; }
-    .t-stat { flex: 1; font-weight: 700; font-size: 0.85rem; color: #34495e; }
-    .t-money { text-align: right; }
-    .t-price { font-size: 0.7rem; color: #2980b9; margin-bottom: 2px; cursor: pointer; text-decoration: underline; }
-    .t-sub { font-weight: 800; color: #27ae60; font-size: 0.95rem; }
-    .footer { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: #fff; padding: 12px 16px; border-radius: 12px; margin-bottom: 20px; }
-    .total-val { color: #2ecc71; font-size: 1.3rem; font-weight: 800; margin-left: 6px; }
-    .save-btn { background: #27ae60; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
-    .save-btn:disabled { background: #95a5a6; cursor: not-allowed; }
-    .reset-btn { background: #e74c3c; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
-    .reset-btn:disabled { background: #95a5a6; cursor: not-allowed; }
-    .history-container { 
-      overflow-x: auto; 
-      overflow-y: auto;
-      max-height: 70vh; 
-      background: #fff; 
-      border-radius: 12px; 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+    .nav {
+      display: flex;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 57px;
+      z-index: 100;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    th, td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-    th { 
-      font-weight: 800; 
-      background: #f8f9fa; 
-      border-bottom: 2px solid #bdc3c7; 
+
+    .nav-btn {
+      flex: 1;
+      padding: 12px 4px;
+      background: none;
+      border: none;
+      color: #95a5a6;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+
+    .nav-btn.active {
+      color: #2980b9;
+      border-bottom: 3px solid #2980b9;
+    }
+
+    .page {
+      display: none;
+      padding: 8px;
+      margin: 0 auto;
+      max-width: 1600px;
+    }
+
+    .active {
+      display: block;
+    }
+
+    #page-tracker {
+      max-width: 800px;
+    }
+
+    .header {
+      background: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    input,
+    select {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fdfdfd;
+      min-width: 0;
+    }
+
+    .toggle-group {
+      display: flex;
+      flex: 1;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .seg-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #f8f9fa;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #7f8c8d;
+    }
+
+    .seg-btn.active {
+      background: #2c3e50;
+      color: white;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #7f8c8d;
+      margin: 12px 0 6px 4px;
+      text-transform: uppercase;
+    }
+
+    .tracker-list {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 12px;
+      border-left: 4px solid #ccc;
+    }
+
+    .list-def {
+      border-left-color: #3498db;
+    }
+
+    .list-off {
+      border-left-color: #e67e22;
+    }
+
+    .list-team {
+      border-left-color: #9b59b6;
+    }
+
+    .t-row {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 8px 12px;
+    }
+
+    .t-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 110px;
+    }
+
+    .btn-c {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    .btn-m {
+      background: #f1f2f6;
+      color: #747d8c;
+    }
+
+    .btn-p {
+      background: #eccc68;
+      color: #2f3542;
+    }
+
+    .t-count {
+      font-size: 1.3rem;
+      font-weight: 800;
+      width: 28px;
+      text-align: center;
+    }
+
+    .t-stat {
+      flex: 1;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #34495e;
+    }
+
+    .t-money {
+      text-align: right;
+    }
+
+    .t-price {
+      font-size: 0.7rem;
+      color: #2980b9;
+      margin-bottom: 2px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .t-sub {
+      font-weight: 800;
+      color: #27ae60;
+      font-size: 0.95rem;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .total-val {
+      color: #2ecc71;
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-left: 6px;
+    }
+
+    .save-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .save-btn:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    .reset-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .reset-btn:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    .history-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    th,
+    td {
+      padding: 10px 6px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 800;
+      background: #f8f9fa;
+      border-bottom: 2px solid #bdc3c7;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    
+
     /* Sticky Column System Layout Styles */
-    .sticky-1 { position: sticky; left: 0; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
-    .sticky-2 { position: sticky; left: 60px; background: #f8f9fa; z-index: 15; border-right: 1px solid #eee; }
-    
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-    .modal-content { background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
-    .edit-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 10px; }
-    .edit-grid label { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; display: block; margin-bottom: 2px; }
-    .edit-grid input, .edit-grid select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border-radius: 8px; border: 1px solid #eee; margin-bottom: 5px; }
-    #achievements-container { color: #d35400; font-size: 1.1rem; font-weight: 900; text-align: center; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); display: none; }
-    #warnings-container { color: #c0392b; font-size: 0.85rem; font-weight: bold; margin: 0 0 12px 0; background: #fadbd8; padding: 10px; border-radius: 8px; display: none; line-height: 1.4; border-left: 4px solid #e74c3c; }
-    
-    .help-card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 15px; font-size: 0.9rem; line-height: 1.5; }
-    .help-card strong { color: #2980b9; }
-    .help-card ul { margin: 8px 0 0 0; padding-left: 20px; }
-    .help-card li { margin-bottom: 6px; }
-    
-    .individual-disclaimer { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; color: #2471a3; }
-    .brand-logo-container { text-align: center; margin: 10px 0 20px 0; }
-    .brand-logo-container img { max-width: 220px; border-radius: 8px; }
-    
-    .support-card { background: #ebf5fb; border: 1.5px solid #2980b9; text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .support-btn { display: inline-block; background: #008cff; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; box-shadow: 0 2px 6px rgba(0,140,255,0.3); transition: background 0.2s; }
+    .sticky-1 {
+      position: sticky;
+      left: 0;
+      background: #f8f9fa;
+      z-index: 15;
+      border-right: 1px solid #eee;
+    }
+
+    .sticky-2 {
+      position: sticky;
+      left: 60px;
+      background: #f8f9fa;
+      z-index: 15;
+      border-right: 1px solid #eee;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .edit-grid label {
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: #7f8c8d;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .edit-grid input,
+    .edit-grid select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      margin-bottom: 5px;
+    }
+
+    #achievements-container {
+      color: #d35400;
+      font-size: 1.1rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    #warnings-container {
+      color: #c0392b;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin: 0 0 12px 0;
+      background: #fadbd8;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+      line-height: 1.4;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .help-card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .help-card strong {
+      color: #2980b9;
+    }
+
+    .help-card ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .help-card li {
+      margin-bottom: 6px;
+    }
+
+    .individual-disclaimer {
+      background: #eaf2f8;
+      border-left: 4px solid #2980b9;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      color: #2471a3;
+    }
+
+    .brand-logo-container {
+      text-align: center;
+      margin: 10px 0 20px 0;
+    }
+
+    .brand-logo-container img {
+      max-width: 220px;
+      border-radius: 8px;
+    }
+
+    .support-card {
+      background: #ebf5fb;
+      border: 1.5px solid #2980b9;
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .support-btn {
+      display: inline-block;
+      background: #008cff;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      box-shadow: 0 2px 6px rgba(0, 140, 255, 0.3);
+      transition: background 0.2s;
+    }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script src="config.js"></script>
 </head>
+
 <body>
 
-  <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
+  <div id="auth-overlay"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div
+      style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); font-family: 'Segoe UI', Roboto, sans-serif;">
       <h2 style="margin-top: 0; color: #2c3e50; font-size: 1.5rem">🏀 SoloPlayer Tracker</h2>
-      <div id="auth-status" style="margin: 10px 0; font-size: 0.9rem; font-weight: bold; min-height: 1.2em; color: #2980b9;"></div>
-      <p style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px">Access real-time basketball logging & performance insights</p>
+      <div id="auth-status"
+        style="margin: 10px 0; font-size: 0.9rem; font-weight: bold; min-height: 1.2em; color: #2980b9;"></div>
+      <p style="color: #7f8c8d; font-size: 0.85rem; margin-bottom: 20px">Access real-time basketball logging &
+        performance insights</p>
 
-      <input type="email" id="auth-email" placeholder="Email Address" style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+      <input type="email" id="auth-email" placeholder="Email Address"
+        style="width: 100%; margin-bottom: 10px; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
       <div style="position: relative; width: 100%; margin-bottom: 10px">
-        <input type="password" id="auth-password" placeholder="Password" style="width: 100%; padding: 12px; padding-right: 45px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
-        <span id="toggle-password-btn" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; user-select: none;">👁️</span>
+        <input type="password" id="auth-password" placeholder="Password"
+          style="width: 100%; padding: 12px; padding-right: 45px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem;">
+        <span id="toggle-password-btn" onclick="togglePasswordVisibility()"
+          style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; user-select: none;">👁️</span>
       </div>
-      <input type="text" id="auth-access-key" placeholder="Enter Access Key" style="width: 100%; margin-bottom: 15px; padding: 12px; box-sizing: border-box; border: 1px solid #2980b9; border-radius: 6px; font-size: 0.9rem; display: none;">
+      <input type="text" id="auth-access-key" placeholder="Enter Access Key"
+        style="width: 100%; margin-bottom: 15px; padding: 12px; box-sizing: border-box; border: 1px solid #2980b9; border-radius: 6px; font-size: 0.9rem; display: none;">
 
       <div style="display: flex; gap: 10px">
-        <button onclick="handleAuthAction('login')" style="flex: 1; background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Sign In</button>
-        <button onclick="smartRegister()" style="flex: 1; background: #2980b9; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Register</button>
+        <button onclick="handleAuthAction('login')"
+          style="flex: 1; background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Sign
+          In</button>
+        <button onclick="smartRegister()"
+          style="flex: 1; background: #2980b9; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Register</button>
       </div>
     </div>
   </div>
@@ -189,7 +566,7 @@
           </div>
         </div>
       </div>
-      
+
       <div id="tracker-boards-container">
         <div id="wrap-def">
           <div class="section-title">🛡️ Defense</div>
@@ -204,12 +581,13 @@
           <div class="tracker-list list-team" id="board-team"></div>
         </div>
       </div>
-      
+
       <div id="achievements-container"></div>
       <div id="warnings-container"></div>
 
       <div class="footer">
-        <div><span style="font-size:.8rem;font-weight:bold">TOTAL:</span><span class="total-val" id="totalVal">$0.00</span></div>
+        <div><span style="font-size:.8rem;font-weight:bold">TOTAL:</span><span class="total-val"
+            id="totalVal">$0.00</span></div>
         <div style="display:flex;gap:8px">
           <button class="reset-btn" onclick="resetTracker()">RESET</button>
           <button class="save-btn" onclick="saveGame()">SAVE</button>
@@ -239,13 +617,16 @@
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Default Team Minutes</h3>
         <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Set the standard game length for your league.</p>
-        <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+        <input type="number" id="defaultTMin" oninput="updateDefaultTMin(this.value)"
+          style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
       </div>
 
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Tracker Layout</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.</p>
-        <select id="layoutOrder" onchange="updateLayoutOrder()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Choose the order of the sections in the Tracker tab.
+        </p>
+        <select id="layoutOrder" onchange="updateLayoutOrder()"
+          style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold; box-sizing:border-box;">
           <option value="def,off,team">Defense ➔ Offense ➔ Team</option>
           <option value="off,def,team">Offense ➔ Defense ➔ Team</option>
           <option value="team,off,def">Team ➔ Offense ➔ Defense</option>
@@ -255,7 +636,8 @@
 
       <div class="header">
         <h3 style="margin:0 0 10px 0;">Visible Stats</h3>
-        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History tabs.</p>
+        <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Toggle which stats appear in the Tracker and History
+          tabs.</p>
         <div id="settings-list" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
@@ -264,15 +646,20 @@
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
         <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
         <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
-        <div style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
-          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to Home Screen</strong>.<br><br>
-          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home Screen</strong> or <strong>Install App</strong>.
+        <div
+          style="font-size:0.8rem; line-height:1.4; text-align:left; background:white; padding:10px; border-radius:6px;">
+          <strong>iPhone (Safari):</strong> Tap the 📤 Share icon at the bottom, scroll down, and tap ➕ <strong>Add to
+            Home Screen</strong>.<br><br>
+          <strong>Android (Chrome):</strong> Tap the 3 dots menu top-right and tap 📲 <strong>Add to Home
+            Screen</strong> or <strong>Install App</strong>.
         </div>
       </div>
 
       <div class="individual-disclaimer">
         <strong>ℹ️ Individual Player Tracker</strong><br>
-        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
+        This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built
+        to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced
+        metrics (like Usage %).
       </div>
 
       <div class="header">
@@ -282,23 +669,33 @@
 
       <div class="section-title">📱 App Workflow</div>
       <div class="help-card">
-        <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
-          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
+        <div
+          style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
+          <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your
+          mobile phone during live games. However, because of the massive amount of column data, the
+          <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
         </div>
         <ul>
-          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.</li>
-          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set
+            Default Team Minutes.</li>
+          <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots
+            automatically add an attempt.</li>
           <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
-          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout
+            games as Trash to exclude them from averages.</li>
         </ul>
       </div>
 
       <div class="section-title">📈 Advanced Metrics</div>
       <div class="help-card">
-        <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion counters.<br><br>
-        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.<br><br>
-        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.<br><br>
-        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.<br><br>
+        <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion
+        counters.<br><br>
+        <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots
+        are worth 50% more than 2-point shots.<br><br>
+        <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals,
+        3-point field goals, and free throws.<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while
+        they were on the floor.<br><br>
         <strong>A/TO</strong>: Assist to Turnover Ratio.
       </div>
 
@@ -319,38 +716,62 @@
 
     <div id="editModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 500px;">
-        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score</h3>
-        
+        <h3 style="margin-top:0; color:#2c3e50; border-bottom:2px solid #f2f4f4; padding-bottom:8px;">✏️ Edit Box Score
+        </h3>
+
         <input type="hidden" id="editRow">
-        
+
         <div class="edit-grid">
           <div><label>Game Date</label><input type="date" id="editDate"></div>
           <div><label>Opponent</label><input type="text" id="editOpp"></div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number" id="eScoreUs" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number" id="eScoreThem" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="W">W</option><option value="L">L</option><option value="T">T</option></select></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Our Score</label><input type="number"
+              id="eScoreUs"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Opp Score</label><input type="number"
+              id="eScoreThem"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Result</label><select id="editWL"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+              <option value="W">W</option>
+              <option value="L">L</option>
+              <option value="T">T</option>
+            </select></div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px;">
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"><option value="Home">Home</option><option value="Away">Away</option></select></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number" id="eMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
-          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number" id="eTMin" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Location</label><select id="editLoc"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+              <option value="Home">Home</option>
+              <option value="Away">Away</option>
+            </select></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Player MIN</label><input type="number"
+              id="eMin"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
+          <div><label style="font-size:0.7rem; font-weight:bold; color:#7f8c8d;">Team MIN</label><input type="number"
+              id="eTMin"
+              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;"></div>
         </div>
 
         <h4 style="margin:15px 0 8px 0; color:#34495e; border-bottom:1px solid #f2f4f4;">Box Score Counts</h4>
-        <div id="dynamic-modal-stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
+        <div id="dynamic-modal-stats-grid"
+          style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"></div>
 
         <div style="margin-bottom:15px;">
-          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings Payout ($)</label>
-          <input type="number" step="0.01" id="eMoney" style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">
+          <label style="font-size:0.8rem; font-weight:bold; color:#27ae60;">Calculated Financial Incentive Earnings
+            Payout ($)</label>
+          <input type="number" step="0.01" id="eMoney"
+            style="width:100%; padding:8px; font-weight:bold; color:#27ae60; background:#f4fbf7; border:1px solid #27ae60; border-radius:6px; box-sizing:border-box;">
         </div>
 
         <div style="display:flex; gap:10px; justify-content:flex-end;">
-          <button onclick="closeEdit()" style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>
-          <button onclick="saveEdit()" style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Changes</button>
+          <button onclick="closeEdit()"
+            style="background:#7f8c8d; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>
+          <button onclick="saveEdit()"
+            style="background:#27ae60; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer;">Save
+            Changes</button>
         </div>
       </div>
     </div>
@@ -376,9 +797,9 @@
         }
       };
 
-      const isLocalhost = 
-        window.location.hostname === "localhost" || 
-        window.location.hostname === "127.0.0.1" || 
+      const isLocalhost =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
         window.location.hostname.startsWith("192.168.");
 
       if (isLocalhost) {
@@ -387,11 +808,11 @@
       }
       return ENV_CONFIG.production;
     }
-    
+
     // Pull the resolved environment credentials dynamically 
     const currentEnv = getEnvironmentConfig();
 
-    const supabaseUrl = currentEnv.SUPABASE_URL.trim().replace(/\/$/, ""); 
+    const supabaseUrl = currentEnv.SUPABASE_URL.trim().replace(/\/$/, "");
     const supabaseKey = currentEnv.SUPABASE_ANON_KEY.trim();
 
     // Initialize Connection Framework seamlessly across dev/prod environments
@@ -415,7 +836,7 @@
 
       const passwordInput = document.getElementById('auth-password');
       const emailInput = document.getElementById('auth-email');
-      
+
       const handleEnterKey = (event) => {
         if (event.key === 'Enter') {
           event.preventDefault();
@@ -428,7 +849,7 @@
     });
 
     bballDb.auth.onAuthStateChange(async (event, session) => {
-      if (isAppInitialized) return; 
+      if (isAppInitialized) return;
       if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
         if (session) {
           isAppInitialized = true;
@@ -453,10 +874,10 @@
 
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        toggleBtn.innerText = '🙈'; 
+        toggleBtn.innerText = '🙈';
       } else {
         passwordInput.type = 'password';
-        toggleBtn.innerText = '👁️'; 
+        toggleBtn.innerText = '👁️';
       }
     }
 
@@ -493,7 +914,7 @@
             return;
           }
           updateStatus("Validating access and registering...", false);
-          
+
           const { data, error } = await bballDb.auth.signUp({
             email,
             password,
@@ -511,15 +932,15 @@
     async function fetchUserProfile(userId) {
       try {
         let { data: profile, error } = await bballDb
-          .from('profiles') 
+          .from('profiles')
           .select('family_id')
-          .eq('user_id', userId) 
+          .eq('user_id', userId)
           .maybeSingle();
 
         if (!error && profile) currentFamilyId = profile.family_id;
         await loadInitialApplicationState();
       } catch (err) {
-        await loadInitialApplicationState(); 
+        await loadInitialApplicationState();
       }
     }
 
@@ -532,7 +953,7 @@
             global_metric_templates (id, stat_name, section, is_counter, default_price, report_group, report_sort_order, color_theme, formula)
           `)
           .eq("family_id", currentFamilyId)
-          .eq("global_metric_templates.app_type", "basketball:solo"); 
+          .eq("global_metric_templates.app_type", "basketball:solo");
 
         if (error) throw error;
 
@@ -543,7 +964,7 @@
           price: Number(c.custom_price !== null ? c.custom_price : c.global_metric_templates.default_price),
           count: 0,
           visible: c.visible,
-          row: c.global_metric_templates.id, 
+          row: c.global_metric_templates.id,
           section: c.global_metric_templates.section,
           isCounter: c.global_metric_templates.is_counter,
           reportGroup: c.global_metric_templates.report_group,
@@ -572,7 +993,7 @@
       document.getElementById('scoreThem').value = d.st || "";
       document.getElementById('pMin').value = d.pm || "";
       document.getElementById('tMin').value = d.tm || "32";
-      
+
       const dl = document.getElementById('seasonList');
       if (dl) dl.innerHTML = d.seasons.map(s => `<option value="${s}">`).join('');
       if (!document.getElementById('season').value && d.seasons.length > 0) {
@@ -591,7 +1012,7 @@
             <label><input type="checkbox" ${s.visible ? 'checked' : ''} onchange="toggleVis(${s.row}, this.checked)"> Show</label>
           </div>`).join('');
       }
-      
+
       recalcTotal();
       applyLayoutOrder();
     }
@@ -619,10 +1040,10 @@
     async function loadHistory() {
       const historyBody = document.getElementById('history-body');
       if (historyBody) historyBody.innerHTML = '<tr><td colspan="40" style="padding:20px;text-align:center;">Loading Game Logs...</td></tr>';
-      
+
       try {
         let { data: games, error } = await bballDb
-          .from("game_logs") 
+          .from("game_logs")
           .select(`
             id, game_date, season, opponent, location, result, score_us, score_them,
             player_minutes, team_minutes, total_payout, is_deleted,
@@ -640,7 +1061,7 @@
             sheetRow: g.id, date: g.game_date, season: g.season || "Season 1", opp: g.opponent,
             loc: g.location === "Home" ? "H" : "A", res: g.result, su: g.score_us, st: g.score_them,
             min: g.player_minutes, tmin: g.team_minutes, money: Number(g.total_payout || 0),
-            isDel: g.is_deleted || false, rawStats: statsMap 
+            isDel: g.is_deleted || false, rawStats: statsMap
           };
         });
 
@@ -666,7 +1087,7 @@
 
       const filtered = histData.filter(g => (g.isDel === showDel) && (!activeSeason || g.season === activeSeason));
       const visibleTemplates = curData.stats.filter(s => s.visible);
-      
+
       const orderedGroups = [];
       visibleTemplates.forEach(s => {
         if (!orderedGroups.includes(s.reportGroup)) orderedGroups.push(s.reportGroup);
@@ -677,7 +1098,7 @@
         <tr style="background:#2c3e50; color:white;">
           <th rowspan="2" style="vertical-align:middle; padding:8px; z-index:20;" class="sticky-1">Action</th>
           <th colspan="8" style="text-align:center; background:#2980b9; padding:8px;">Universal Match Data</th>`;
-          
+
       let subRowHTML = `
         <tr style="background:#f2f4f4; font-size:0.85rem; color:#2c3e50;">
           <th class="sticky-2" style="background:#f2f4f4;">Date</th>
@@ -716,7 +1137,7 @@
           let equation = fStat.formula.replaceAll('$pMin', g.min).replaceAll('$tMin', g.tmin);
           histStatsInstance.forEach(s => { equation = equation.replaceAll(`[${s.name}]`, s.count); });
           equation = equation.replace(/NULLIF\(([^,]+),\s*([^)]+)\)/g, '($1 === $2 ? NaN : $1)');
-          try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch(e) { fStat.count = 0; }
+          try { let res = eval(equation); fStat.count = isFinite(res) && !isNaN(res) ? res : 0; } catch (e) { fStat.count = 0; }
         });
 
         orderedGroups.forEach(groupName => {
@@ -733,8 +1154,8 @@
             <td style="padding:4px;" class="sticky-1"><button class="reset-btn" style="padding:3px 6px; font-size:0.8rem;" onclick="openModal('${g.sheetRow}')">✏️</button></td>
             <td style="font-weight:bold; white-space:nowrap; padding:8px;" class="sticky-2">${g.date}</td>
             <td style="text-align:left; font-weight:500; color:#2c3e50;">${g.opp}</td>
-            <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc==='H'?'#e8f4f8':'#fcf3cf'}; color:${g.loc==='H'?'#2980b9':'#f39c12'};">${g.loc}</span></td>
-            <td><span style="font-weight:bold; color:${g.res==='W'?'#27ae60':(g.res==='L'?'#c0392b':'#7f8c8d')}">${g.res}</span></td>
+            <td><span style="font-weight:bold; padding:2px 6px; border-radius:4px; font-size:0.75rem; background:${g.loc === 'H' ? '#e8f4f8' : '#fcf3cf'}; color:${g.loc === 'H' ? '#2980b9' : '#f39c12'};">${g.loc}</span></td>
+            <td><span style="font-weight:bold; color:${g.res === 'W' ? '#27ae60' : (g.res === 'L' ? '#c0392b' : '#7f8c8d')}">${g.res}</span></td>
             <td>${g.su}</td><td>${g.st}</td><td>${g.min}</td>
             ${statsColumnsHTML}
             <td style="font-weight:bold; color:#27ae60; background:#f4fbf7; padding:8px;">$${g.money.toFixed(2)}</td>
@@ -853,7 +1274,7 @@
     function recalcEditMoney() {
       const rawCountersOnly = curData.stats.filter(s => s.formula === null);
       let newTotal = 0;
-      
+
       rawCountersOnly.forEach(s => {
         const targetInput = document.getElementById(`modal-input-${s.row}`);
         if (targetInput) {
@@ -877,24 +1298,24 @@
     function switchTab(t) {
       document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      
+
       const targetPage = document.getElementById('page-' + t);
       const targetTab = document.getElementById('tab-' + t);
-      
+
       if (targetPage) targetPage.style.display = 'block';
       if (targetTab) targetTab.classList.add('active');
       if (t === 'history') loadHistory();
     }
 
-    function autoWL(){
+    function autoWL() {
       const u = parseInt(document.getElementById('scoreUs').value), t = parseInt(document.getElementById('scoreThem').value);
-      if(!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
+      if (!isNaN(u) && !isNaN(t)) setWL(u > t ? 'W' : (u < t ? 'L' : 'T'));
     }
 
-    function setLoc(h){isHome=h;document.getElementById('btnHome').classList.toggle('active',h);document.getElementById('btnAway').classList.toggle('active',!h)}
-    function setWL(w){
-      curWL=w;
-      ['btnWin','btnTie','btnLoss'].forEach(b => document.getElementById(b)?.classList.remove('active'));
+    function setLoc(h) { isHome = h; document.getElementById('btnHome').classList.toggle('active', h); document.getElementById('btnAway').classList.toggle('active', !h) }
+    function setWL(w) {
+      curWL = w;
+      ['btnWin', 'btnTie', 'btnLoss'].forEach(b => document.getElementById(b)?.classList.remove('active'));
       const targetId = w === 'W' ? 'btnWin' : (w === 'T' ? 'btnTie' : 'btnLoss');
       document.getElementById(targetId)?.classList.add('active');
     }
@@ -931,17 +1352,17 @@
       const s = curData.stats.find(x => x.row === r);
       if (!s) return;
       s.count = Math.max(0, s.count + a);
-      
+
       if (a > 0) {
         if (s.name.includes('🎯 2PT Made')) {
           const attRow = curData.stats.find(x => x.name.includes('🏀 2PT Attempt'));
-          if (attRow) attRow.count++; 
+          if (attRow) attRow.count++;
         } else if (s.name.includes('🥅 FT Made')) {
           const attRow = curData.stats.find(x => x.name.includes('🏀 FT Attempt'));
-          if (attRow) attRow.count++; 
+          if (attRow) attRow.count++;
         } else if (s.name.includes('👌 3PT Made')) {
           const attRow = curData.stats.find(x => x.name.includes('🏀 3PT Attempt'));
-          if (attRow) attRow.count++; 
+          if (attRow) attRow.count++;
         }
       }
       render(curData);
@@ -954,4 +1375,5 @@
     }
   </script>
 </body>
+
 </html>
