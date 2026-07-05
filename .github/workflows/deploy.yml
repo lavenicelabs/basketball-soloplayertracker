@@ -3,7 +3,7 @@ name: Deploy Multi-Sport Tracker to GitHub Pages
 on:
   push:
     branches:
-      - main # Triggers the build automatically whenever you push code changes to main
+      - main
 
 permissions:
   contents: read
@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   deploy:
-    # REMOVED the "name: github-pages" restriction loop so it can read your global Repository Secrets cleanly
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
