@@ -24,14 +24,14 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # FIXED: Directly targets index.html and swaps the placeholders inline during deployment build
+      # FIXED: Targets placeholders cleanly by evaluating standard replacement handles
       - name: Inject Production Secrets Inline
         env:
           PROD_URL: ${{ secrets.PROD_SUPABASE_URL }}
           PROD_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
         run: |
-          sed -i "s|\$PROD_URL|$PROD_URL|g" index.html
-          sed -i "s|\$PROD_KEY|$PROD_KEY|g" index.html
+          sed -i 's|__PROD_URL__|'"$PROD_URL"'|g' index.html
+          sed -i 's|__PROD_KEY__|'"$PROD_KEY"'|g' index.html
 
       - name: Setup GitHub Pages Environment
         uses: actions/configure-pages@v5
