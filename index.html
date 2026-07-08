@@ -312,7 +312,6 @@
           SUPABASE_ANON_KEY: "local-dummy-dev-key"
         },
         production: {
-          // UPDATED: Standard alpha placeholders to prevent terminal escaping loops
           SUPABASE_URL: "__PROD_URL__",
           SUPABASE_ANON_KEY: "__PROD_KEY__"
         }
@@ -329,28 +328,6 @@
       }
       return ENV_CONFIG.production;
     }
-    const ENV_CONFIG = {
-      local: {
-        SUPABASE_URL: "http://127.0.0.1:54321",
-        SUPABASE_ANON_KEY: "local-dummy-dev-key"
-      },
-      production: {
-        SUPABASE_URL: "$PROD_URL",
-        SUPABASE_ANON_KEY: "$PROD_KEY"
-      }
-    };
-
-    const isLocalhost =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.startsWith("192.168.");
-
-    if (isLocalhost) {
-      console.log("🔌 Connected to Local Docker Dev Environment Node");
-      return ENV_CONFIG.local;
-    }
-    return ENV_CONFIG.production;
-    }
 
     const currentEnv = getEnvironmentConfig();
     const supabaseUrl = currentEnv.SUPABASE_URL.trim().replace(/\/$/, "");
@@ -360,6 +337,8 @@
     window.bballDb = supabase.createClient(supabaseUrl, supabaseKey);
     const bballDb = window.bballDb;
   </script>
+
+  <script src="script.js"></script>
 
   <script src="script.js"></script>
 </body>
