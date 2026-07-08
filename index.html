@@ -170,7 +170,10 @@
       </div>
     </div>
 
+   <!-- HELP PAGE -->
     <div id="page-help" class="page">
+
+      <!-- 📲 Use This as a Mobile App Card -->
       <div class="header" style="background: #eaf2f8; border: 1.5px dashed #2980b9;">
         <h3 style="margin:0 0 5px 0; color:#2980b9;">📲 Use This as a Mobile App</h3>
         <p style="font-size:0.85rem; color:#555; margin-top:0;">To put a permanent basketball icon on your phone:</p>
@@ -180,54 +183,94 @@
         </div>
       </div>
 
+      <!-- ℹ️ Individual Player Tracker Disclaimer -->
       <div class="individual-disclaimer">
         <strong>ℹ️ Individual Player Tracker</strong><br>
         This software is designed to track and gamify the season for a <strong>single player</strong>. It is not built to track rosters of multiple players. Team stats entered are solely used to calculate your personal advanced metrics (like Usage %).
       </div>
 
+      <!-- 📑 App Documentation Header -->
       <div class="header">
         <h3 style="margin:0 0 5px 0;">App Documentation</h3>
         <p style="font-size:0.85rem; color:#7f8c8d; margin-top:0;">Reference guide for metrics and app workflow.</p>
       </div>
 
+      <!-- 📱 App Workflow Section -->
       <div class="section-title">📱 App Workflow</div>
       <div class="help-card">
         <div style="background: #fff8e1; border-left: 4px solid #f39c12; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.8rem; color: #b78103; line-height: 1.4;">
           <strong>💡 PRO-TIP:</strong> The <strong>Tracker</strong> tab is fully optimized for quick logging on your mobile phone during live games. However, because of the massive amount of column data, the <strong>History</strong> tab is best viewed on a tablet or desktop PC for deep stat analysis.
         </div>
         <ul>
-          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes.</li>
+          <li><strong>1. Setup:</strong> Go to the Settings tab to hide/show stats, reorder the Tracker layout, or set Default Team Minutes. Tap any price in the Tracker to edit its value.</li>
           <li><strong>2. Entry:</strong> Log game details and use the +/- buttons to track stats. Made shots automatically add an attempt.</li>
           <li><strong>3. Save:</strong> Hit Save to push the game to your History log.</li>
-          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash to exclude them from averages.</li>
+          <li><strong>4. Review & Trash:</strong> Go to History to view averages, edit past games (✏️), or mark blowout games as Trash (🗑️) to exclude them from averages. To restore a trashed game, check the "Trash" box at the top of the History tab to reveal hidden games, then click the Restore icon (♻️).</li>
+          <li><strong>5. Export PDF:</strong> Tap the ✏️ icon on any game in the History tab and click <strong>Export PDF</strong> to download a printable box score.</li>
         </ul>
       </div>
 
-      <div class="section-title">📄 Export Box Score to PDF</div>
+      <!-- 📋 Game Details (Header) Section -->
+      <div class="section-title">📋 Game Details (Header)</div>
       <div class="help-card">
-        Need a physical printout of a game or want to text a clean stat sheet to a coach/trainer? You can export any logged match directly to a professional PDF file.
         <ul>
-          <li>1. Go to the <strong>History</strong> tab.</li>
-          <li>2. Scroll horizontally to the far right edge of the table rows matrix.</li>
-          <li>3. Click the red 📄 icon next to your calculated total payout on that match row.</li>
+          <li><strong>Season:</strong> Type a new season or pick from the dropdown. <em>The app automatically defaults to your most recently created season.</em></li>
+          <li><strong>Scores & Result:</strong> Enter "Our" score and "Opp" (Opponent) score. The Win/Tie/Loss toggle will <em>automatically update</em> based on the scores you enter.</li>
+          <li><strong>Minutes (MIN):</strong> Enter Player MIN (your playing time) and Team MIN (total game length, e.g., 32, 40, or 48). <em>Team MIN is required to accurately calculate Usage Percentage (USG%). You can set your default Team MIN in the Settings tab so you don't have to enter it every time.</em></li>
+          <li><strong>Location:</strong> Toggle whether the game was Home or Away.</li>
         </ul>
       </div>
 
+      <!-- 💸 Custom Metrics Section -->
+      <div class="section-title">💸 Custom Metrics</div>
+      <div class="help-card">
+        <strong>Total $</strong>: An incentive option for players to earn money by accumulating stats. <em>Prices are editable by tapping the blue price text in the Tracker.</em><br><br>
+        <strong>Trash Flag</strong>: Indicates if the game was a blowout or garbage time. Toggling this in History removes the game from your season averages.
+      </div>
+
+      <!-- 📈 Advanced Metrics Section -->
       <div class="section-title">📈 Advanced Metrics</div>
       <div class="help-card">
-        <strong>2PT% / 3PT% / FT%</strong>: Tracks situational shooting percentages grouped tightly with raw conversion counters.<br><br>
         <strong>eFG% (Effective Field Goal %)</strong>: Adjusts standard FG% to account for the fact that 3-point shots are worth 50% more than 2-point shots.<br><br>
         <strong>TS% (True Shooting %)</strong>: A measure of shooting efficiency that takes into account field goals, 3-point field goals, and free throws.<br><br>
-        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor.<br><br>
+        <strong>USG% (Usage Percentage)</strong>: An estimate of the percentage of team plays used by a player while they were on the floor. <em>Requires Team MIN, Team FGA, Team FTA, and Team TO to calculate.</em><br><br>
         <strong>A/TO</strong>: Assist to Turnover Ratio.
       </div>
 
+      <!-- 🏀 Basic Stats Grid Section -->
+      <div class="section-title">🏀 Basic Stats</div>
+      <div class="help-card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div><strong>PTS</strong>: Points</div>
+        <div><strong>REB</strong>: Rebounds</div>
+        <div><strong>AST</strong>: Assists</div>
+        <div><strong>STL</strong>: Steals</div>
+        <div><strong>BLK</strong>: Blocks</div>
+        <div><strong>TO</strong>: Turnovers</div>
+        <div><strong>MIN</strong>: Minutes Played</div>
+        <div><strong>DEF</strong>: Deflections</div>
+        <div><strong>JMP</strong>: Jump Balls Won</div>
+        <div><strong>CONT</strong>: Contested Shots</div>
+        <div><strong>SCRN</strong>: Screens Set</div>
+        <div><strong>CHG</strong>: Charges Drawn</div>
+      </div>
+
+      <!-- 🔗 Share This App Warning Section (Minus QR & Google Content) -->
+      <div class="section-title">🔗 Share This App</div>
+      <div class="help-card">
+        <div style="background: #fdf2e9; border-left: 4px solid #e67e22; padding: 12px; border-radius: 8px; font-size: 0.8rem; text-align: left; color: #d35400; line-height: 1.4;">
+          <strong>⚠️ IMPORTANT SHARING WARNING</strong><br>
+          Sharing your private application access credentials gives others access to view and edit <strong>your specific data</strong>. If you want to give a friend their <strong>own blank tracker</strong>, do not share your layout access keys. Instead, send them your original Google Sheets "Make a copy" link so they can establish their own independent database space.
+        </div>
+      </div>
+
+      <!-- 🎨 LaVenice Labs Branding Logo Section -->
       <div class="brand-logo-container">
         <img src="https://img.icons8.com/emoji/96/basketball-emoji.png" alt="LaVenice Labs Logo" style="display: block; margin: 0 auto 8px auto;">
         <div style="font-weight: 800; font-size: 1.1rem; text-align: center; color: #2c3e50; letter-spacing: 0.5px;">LaVenice Labs</div>
         <div style="font-weight: bold; font-size: 0.65rem; text-align: center; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px;">Software Suite Edition</div>
       </div>
 
+      <!-- 💙 App Appreciation & Support Card (Your Preferred Phrasing) -->
       <div class="support-card">
         <strong style="color: #2980b9; font-size: 1.05rem;">💙 App Appreciation & Support</strong>
         <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
@@ -237,6 +280,18 @@
           ☕ Buy the Developer a Coffee
         </a>
       </div>
+
+      <!-- ✉️ Contact Support Card -->
+      <div class="help-card" style="text-align: center; margin-top: 20px;">
+        <strong style="color: #2c3e50; font-size: 1.05rem;">Need Help?</strong>
+        <p style="font-size: 0.85rem; color: #555; margin: 8px 0 12px 0; line-height: 1.4;">
+          If you have any questions, encounter a bug, or need support, feel free to reach out to us directly!
+        </p>
+        <a href="mailto:lavenicelabs@gmail.com?subject=SoloPlayer%20Tracker%20Support" class="contact-btn">
+          ✉️ Contact LaVenice Labs
+        </a>
+      </div>
+
     </div>
 
     <div id="editModal" class="modal-overlay">
